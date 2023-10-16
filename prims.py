@@ -33,19 +33,27 @@ def prims(graph):
 
         for v in graph:                     #Update minimum weight for the rest of the vertices in graph
             if v not in Tv:                 
-                if (w, v) in graph:         #If (w, v) in graph
-                    Lv = graph[w][(w, v)]   #Update Lv to weight of (w, v)
+                if (w, v) in graph and graph[w][(w, v)] < Lv:         #If (w, v) in graph and weight of (w, v) < Lv
+                    Lv = graph[w][(w, v)]                             #Update Lv to weight of (w, v)
     #Return edges in MST
     return Te
 
 #Example graph from page
+#graph = {
+#    'A': {('A', 'B'): 2, ('A', 'C'): 5},
+#    'B': {('B', 'A'): 2, ('B', 'C'): 7, ('B', 'D'):8},
+#    'C': {('C', 'A'): 5, ('C', 'B'): 7, ('C', 'D'):4, ('C', 'E'): 5},
+#    'D': {('D', 'B'): 8, ('D', 'C'): 4, ('D', 'F'): 10},
+#    'E': {('E', 'C'): 5, ('E', 'F'): 7},
+#    'F': {('F', 'D'): 10, ('F', 'E'): 7}
+#}
+
+#Example graph
 graph = {
-    'A': {('A', 'B'): 2, ('A', 'C'): 5},
-    'B': {('B', 'A'): 2, ('B', 'C'): 7, ('B', 'D'):8},
-    'C': {('C', 'A'): 5, ('C', 'B'): 7, ('C', 'D'):4, ('C', 'E'): 5},
-    'D': {('D', 'B'): 8, ('D', 'C'): 4, ('D', 'F'): 10},
-    'E': {('E', 'C'): 5, ('E', 'F'): 7},
-    'F': {('F', 'D'): 10, ('F', 'E'): 7}
+    'A': {('A', 'B'): 2, ('A', 'C'): 3},
+    'B': {('B', 'A'): 2, ('B', 'C'): 4, ('B', 'D'): 5},
+    'C': {('C', 'A'): 3, ('C', 'B'): 4, ('C', 'D'): 1},
+    'D': {('D', 'B'): 5, ('D', 'C'): 1}
 }
 
 MST = prims(graph)
