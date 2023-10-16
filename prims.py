@@ -3,38 +3,48 @@
 #
 
 def prims(graph):
-    Te = []         #Initialising MST as empty
+    Te = []         #Initialising MST edges as empty
     Tv = set()      #Initialising set of visited vertices as empty
+    L = {}          #Initialising dictionary for all vertices
 
-    #Starting MST on vertex u by changing graph vertices to list format and selecting first index
+    #Starting MST on vertex u by changing graph vertices to a list and selecting first index
     u = list(graph.keys())[0]
     #Adding u to visited vertices
     Tv.add(u)
+
+    #Initialise L for all vertices in graph
+    for v in graph:
+        if v != u:                      
+            if (u, v) in graph[u]:
+                L[v] = graph[u][(u, v)] #Set L[v] to weight of (u, v)
+            else:
+                L[v] = float("inf")     #Else weight of (u, v) is infinite
+        
 
     #While there are unvisited vertices in graph
     while Tv != set(graph.keys()):
         minimum_weight = float("inf")   #Initialise minimum weight to be infinite
         w = None                        #Vertex being considered for addition to MST
-        e = None                        #Edge that connects vertx w to current MST
+        e = None                        #Edge that connects vertex w to current MST
 
         for v in graph:                 
             if v not in Tv:
-                if (u, v) in graph[u]:      #If there is an edge (u, v) in graph
-                    Lv = graph[u][(u, v)]   #then Lv is set to weight of edge (u, v)
+                if (u, v) in graph[u]:        #If there is an edge (u, v) in graph
+                    L[v] = graph[u][(u, v)]   #then L[v] is set to weight of edge (u, v)
                 else:
-                    Lv = float("inf")       #else Lv is set to infinity
-                if Lv < minimum_weight:
-                    minimum_weight = Lv     #Updating minimum weight to weight of edge (u, v) else infinity
-                    w = v                   #Updating new MST vertex to v   
-                    e = (u, v)              #Updating edge to (u, v)
+                    L[v] = float("inf")       #else L[v] is set to infinity
+                if L[v] < minimum_weight:
+                    minimum_weight = L[v]     #Updating minimum weight to weight of edge (u, v) else infinity
+                    w = v                     #Updating new MST vertex to v   
+                    e = (u, v)                #Updating edge connected to new MST vertex to (u, v)
 
         Te.append(e)                        #Adding edge with minimum weight to MST
         Tv.add(w)                           #Adding vertex w to Tv since it has been visited
 
         for v in graph:                     #Update minimum weight for the rest of the vertices in graph
             if v not in Tv:                 
-                if (w, v) in graph and graph[w][(w, v)] < Lv:         #If (w, v) in graph and weight of (w, v) < Lv
-                    Lv = graph[w][(w, v)]                             #Update Lv to weight of (w, v)
+                if (w, v) in graph and graph[w][(w, v)] < L[v]:         #If (w, v) in graph and weight of (w, v) < Lv
+                    L[v] = graph[w][(w, v)]                             #Update Lv to weight of (w, v)
     #Return edges in MST
     return Te
 
