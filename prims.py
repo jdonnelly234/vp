@@ -1,6 +1,7 @@
 #
 #Basic implementation for Prim's algorithm MST based on lecture notes
 #
+
 import time
 
 def prims(graph):
@@ -46,27 +47,38 @@ def prims(graph):
                 print("Minimum weight:", minimum_weight)
                 print("Current w:", w)
                 print("Current e:", e)
-            time.sleep(1)
         u = w                               #Update the current vertex to the MST vertex
         Te.append(e)                        #Adding edge with minimum weight to MST
         Tv.add(w)                           #Adding vertex w to Tv since it has been visited
 
         for v in graph:                     #Update minimum weight for the rest of the vertices in graph
             if v not in Tv:                 
-                if (w, v) in graph and graph[w][(w, v)] < L[v]:         #If (w, v) in graph and weight of (w, v) < Lv
-                    L[v] = graph[w][(w, v)]                             #Update Lv to weight of (w, v)
+                if (w, v) in graph and graph[w][(w, v)] < L[v]:         #If (w, v) in graph and weight of (w, v) < L[v]
+                    L[v] = graph[w][(w, v)]                             #Update L[v] to weight of (w, v)
     #Return edges in MST
     return Te
 
-#Example graph from page
+#Simpler example graph from page
 graph = {
-    'A': {('A', 'B'): 2, ('A', 'C'): 5},
-    'B': {('B', 'A'): 2, ('B', 'C'): 7, ('B', 'D'):8},
-    'C': {('C', 'A'): 5, ('C', 'B'): 7, ('C', 'D'):4, ('C', 'E'): 5},
-    'D': {('D', 'B'): 8, ('D', 'C'): 4, ('D', 'F'): 10},
-    'E': {('E', 'C'): 5, ('E', 'F'): 7},
-    'F': {('F', 'D'): 10, ('F', 'E'): 7}
+    'A': {('A', 'B'): 2, ('A', 'C'): 5, ('A', 'D'): 4},
+    'B': {('B', 'A'): 2, ('B', 'D'): 3},
+    'C': {('C', 'A'): 5, ('C', 'D'): 1},
+    'D': {('D', 'B'): 3, ('D', 'C'): 1, ('D', 'A'): 4}
+}
+
+#More complex example graph from page
+hardGraph = {
+    'A': {('A', 'B'): 2, ('A', 'C'): 1},
+    'B': {('B', 'A'): 2, ('B', 'D'): 4, ('B', 'E'): 2, ('B', 'F'): 8},
+    'C': {('C', 'A'): 1, ('C', 'D'): 10},
+    'D': {('D', 'B'): 4, ('D', 'E'): 6, ('D', 'G'): 7},
+    'E': {('E', 'B'): 2, ('E', 'D'): 6, ('E', 'F'): 4, ('E', 'G'): 5},
+    'F': {('F', 'B'): 8, ('F', 'E'): 4},
+    'G': {('G', 'D'): 7, ('G', 'E'): 5}
 }
 
 MST = prims(graph)
+print("The minimum spanning tree for this graph is: ", MST)
+
+MST = prims(hardGraph)
 print("The minimum spanning tree for this graph is: ", MST)
