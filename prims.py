@@ -1,12 +1,14 @@
 #
 #Basic implementation for Prim's algorithm MST based on lecture notes
 #
+import time
 
 def prims(graph):
+   
     Te = []         #Initialising MST edges as empty
     Tv = set()      #Initialising set of visited vertices as empty
     L = {}          #Initialising dictionary for all vertices
-
+   
     #Starting MST on vertex u by changing graph vertices to a list and selecting first index
     u = list(graph.keys())[0]
     #Adding u to visited vertices
@@ -19,10 +21,12 @@ def prims(graph):
                 L[v] = graph[u][(u, v)] #Set L[v] to weight of (u, v)
             else:
                 L[v] = float("inf")     #Else weight of (u, v) is infinite
-        
 
     #While there are unvisited vertices in graph
     while Tv != set(graph.keys()):
+        print("Current Tv:", Tv)
+        print("Current graph:", graph)
+
         minimum_weight = float("inf")   #Initialise minimum weight to be infinite
         w = None                        #Vertex being considered for addition to MST
         e = None                        #Edge that connects vertex w to current MST
@@ -37,7 +41,13 @@ def prims(graph):
                     minimum_weight = L[v]     #Updating minimum weight to weight of edge (u, v) else infinity
                     w = v                     #Updating new MST vertex to v   
                     e = (u, v)                #Updating edge connected to new MST vertex to (u, v)
-
+                print("Current v:", v)
+                print("Current L:", L)
+                print("Minimum weight:", minimum_weight)
+                print("Current w:", w)
+                print("Current e:", e)
+            time.sleep(1)
+        u = w                               #Update the current vertex to the MST vertex
         Te.append(e)                        #Adding edge with minimum weight to MST
         Tv.add(w)                           #Adding vertex w to Tv since it has been visited
 
@@ -49,21 +59,13 @@ def prims(graph):
     return Te
 
 #Example graph from page
-#graph = {
-#    'A': {('A', 'B'): 2, ('A', 'C'): 5},
-#    'B': {('B', 'A'): 2, ('B', 'C'): 7, ('B', 'D'):8},
-#    'C': {('C', 'A'): 5, ('C', 'B'): 7, ('C', 'D'):4, ('C', 'E'): 5},
-#    'D': {('D', 'B'): 8, ('D', 'C'): 4, ('D', 'F'): 10},
-#    'E': {('E', 'C'): 5, ('E', 'F'): 7},
-#    'F': {('F', 'D'): 10, ('F', 'E'): 7}
-#}
-
-#Example graph
 graph = {
-    'A': {('A', 'B'): 2, ('A', 'C'): 3},
-    'B': {('B', 'A'): 2, ('B', 'C'): 4, ('B', 'D'): 5},
-    'C': {('C', 'A'): 3, ('C', 'B'): 4, ('C', 'D'): 1},
-    'D': {('D', 'B'): 5, ('D', 'C'): 1}
+    'A': {('A', 'B'): 2, ('A', 'C'): 5},
+    'B': {('B', 'A'): 2, ('B', 'C'): 7, ('B', 'D'):8},
+    'C': {('C', 'A'): 5, ('C', 'B'): 7, ('C', 'D'):4, ('C', 'E'): 5},
+    'D': {('D', 'B'): 8, ('D', 'C'): 4, ('D', 'F'): 10},
+    'E': {('E', 'C'): 5, ('E', 'F'): 7},
+    'F': {('F', 'D'): 10, ('F', 'E'): 7}
 }
 
 MST = prims(graph)
