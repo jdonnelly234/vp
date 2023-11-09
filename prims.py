@@ -1,5 +1,5 @@
 #
-#Basic implementation for Prim's algorithm MST based on lecture notes
+#Basic implementation for Prim's algorithm MST based on PLK Chapter 8 - Graph Algorithms
 #
 
 import time
@@ -27,6 +27,7 @@ def prims(graph):
     while Tv != set(graph.keys()):
         print("Current Tv:", Tv)
         print("Current graph:", graph)
+        print(" ")
 
         minimum_weight = float("inf")   #Initialise minimum weight to be infinite
         w = None                        #Vertex being considered for addition to MST
@@ -47,14 +48,20 @@ def prims(graph):
                 print("Minimum weight:", minimum_weight)
                 print("Current w:", w)
                 print("Current e:", e)
-        u = w                               #Update the current vertex to the MST vertex
-        Te.append(e)                        #Adding edge with minimum weight to MST
-        Tv.add(w)                           #Adding vertex w to Tv since it has been visited
+                print(" ")
+
+        if w is None:
+            break;                      #Break if all vertices have been visited
+        
+        u = w                               #Update the current vertex to the latest MST vertex
+        Te.append(e)                        #Adding edge with minimum weight to MST list
+        Tv.add(w)                           #Adding vertex w to Tv set since it has been visited
 
         for v in graph:                     #Update minimum weight for the rest of the vertices in graph
             if v not in Tv:                 
-                if (w, v) in graph and graph[w][(w, v)] < L[v]:         #If (w, v) in graph and weight of (w, v) < L[v]
-                    L[v] = graph[w][(w, v)]                             #Update L[v] to weight of (w, v)
+                if (v, w) in graph and graph[w][(v, w)] < L[v]:         #If (w, v) in graph and weight of (w, v) < L[v]
+                    L[v] = graph[w][(v, w)]                             #Update L[v] to weight of (w, v)
+    
     #Return edges in MST
     return Te
 
@@ -67,18 +74,16 @@ graph = {
 }
 
 #More complex example graph from page
-hardGraph = {
-    'A': {('A', 'B'): 2, ('A', 'C'): 1},
-    'B': {('B', 'A'): 2, ('B', 'D'): 4, ('B', 'E'): 2, ('B', 'F'): 8},
-    'C': {('C', 'A'): 1, ('C', 'D'): 10},
-    'D': {('D', 'B'): 4, ('D', 'E'): 6, ('D', 'G'): 7},
-    'E': {('E', 'B'): 2, ('E', 'D'): 6, ('E', 'F'): 4, ('E', 'G'): 5},
-    'F': {('F', 'B'): 8, ('F', 'E'): 4},
-    'G': {('G', 'D'): 7, ('G', 'E'): 5}
+complexGraph = {
+    'A': {('A', 'B'): 5, ('A', 'C'): 10, ('A', 'D'): 8, ('A', 'E'): 7},
+    'B': {('B', 'A'): 5, ('B', 'C'): 6, ('B', 'D'): 12},
+    'C': {('C', 'A'): 10, ('C', 'B'): 6, ('C', 'D'): 15, ('C', 'E'): 9},
+    'D': {('D', 'A'): 8, ('D', 'B'): 12, ('D', 'C'): 15, ('D', 'E'): 11},
+    'E': {('E', 'A'): 7, ('E', 'C'): 9, ('E', 'D'): 11}
 }
 
-MST = prims(graph)
+MST = prims(complexGraph)
 print("The minimum spanning tree for this graph is: ", MST)
 
-MST = prims(hardGraph)
-print("The minimum spanning tree for this graph is: ", MST)
+
+
