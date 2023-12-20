@@ -2,8 +2,6 @@
 #Basic implementation for Prim's algorithm MST based on PLK Chapter 8 - Graph Algorithms
 #
 
-import time
-
 def prims(graph):
    
     Te = []         #Initialising MST edges as empty
@@ -22,12 +20,17 @@ def prims(graph):
                 L[v] = graph[u][(u, v)] #Set L[v] to weight of (u, v)
             else:
                 L[v] = float("inf")     #Else weight of (u, v) is infinite
+    
+    print("Initial L table for vertex u: ")
+    print(L)
+    print(" ")
 
     #While there are unvisited vertices in graph
     while Tv != set(graph.keys()):
         print("Current Tv:", Tv)
         print("Current graph:", graph)
         print(" ")
+        print("CURRENT U: ", u)
 
         minimum_weight = float("inf")   #Initialise minimum weight to be infinite
         w = None                        #Vertex being considered for addition to MST
@@ -53,14 +56,15 @@ def prims(graph):
         if w is None:
             break;                      #Break if all vertices have been visited
         
-        u = w                               #Update the current vertex to the latest MST vertex
-        Te.append(e)                        #Adding edge with minimum weight to MST list
-        Tv.add(w)                           #Adding vertex w to Tv set since it has been visited
+        if w not in Tv:
+            u = w                               #Update the current vertex to the latest MST vertex
+            Te.append(e)                        #Adding edge with minimum weight to MST list
+            Tv.add(w)                           #Adding vertex w to Tv set since it has been visited
 
         for v in graph:                     #Update minimum weight for the rest of the vertices in graph
             if v not in Tv:                 
-                if (v, w) in graph and graph[w][(v, w)] < L[v]:         #If (w, v) in graph and weight of (w, v) < L[v]
-                    L[v] = graph[w][(v, w)]                             #Update L[v] to weight of (w, v)
+                if (w, v) in graph and graph[w][(w, v)] < L[v]:         #If (v, w) in graph and weight of (v, w) < L[v]
+                    L[v] = graph[w][(w, v)]                             #Update L[v] to weight of (v, w)
     
     #Return edges in MST
     return Te
@@ -82,7 +86,16 @@ complexGraph = {
     'E': {('E', 'A'): 7, ('E', 'C'): 9, ('E', 'D'): 11}
 }
 
-MST = prims(complexGraph)
+# Example graph for testing Prim's algorithm
+testGraph = {
+    'A': {('A', 'B'): 2, ('A', 'C'): 3, ('A', 'D'): 4},
+    'B': {('B', 'A'): 2, ('B', 'C'): 1, ('B', 'E'): 5},
+    'C': {('C', 'A'): 3, ('C', 'B'): 1, ('C', 'D'): 6, ('C', 'E'): 2},
+    'D': {('D', 'A'): 4, ('D', 'C'): 6, ('D', 'E'): 8},
+    'E': {('E', 'B'): 5, ('E', 'C'): 2, ('E', 'D'): 8}
+}
+
+MST = prims(testGraph)
 print("The minimum spanning tree for this graph is: ", MST)
 
 
