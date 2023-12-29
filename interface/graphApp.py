@@ -5,9 +5,10 @@ class Node:
     def __init__(self, x, y, identifier):
         self.x = x
         self.y = y
-        self.id = identifier  # To store the ID of the oval on the canvas
         self.id = None  # To store the ID of the oval on the canvas
         self.text_id = None  # To store the ID of the text on the canvas
+        self.identifier = identifier  # To store the identifier of the node
+
 
 class Edge:
     def __init__(self, start_node, end_node, weight):
@@ -17,13 +18,14 @@ class Edge:
         self.line_id = None  # To store the ID of the line on the canvas
         self.text_id = None  # To store the ID of the text label for the weight
 
+
 class GraphApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Graph Drawing App")
+        self.title("Prim's Algorithm Visualizer")
 
         self.canvas = Canvas(self, width=800, height=600, bg="white")
-        self.canvas.pack()
+        self.canvas.grid(row=0, column=0, columnspan=4)  # Span across multiple columns
 
         self.nodes = []  # List to store nodes
         self.edges = []  # List to store edges
@@ -33,35 +35,45 @@ class GraphApp(tk.Tk):
 
         # UI components
         self.status_label = Label(self, text="Graph Drawing Mode")
-        self.status_label.pack()
+        self.status_label.grid(row=1, column=0, columnspan=4)
 
         # Dropdown menus and weight input
         self.start_node_var = StringVar(self)
         self.end_node_var = StringVar(self)
         self.weight_var = StringVar(self)
 
-        # Initialize the dropdown menus with a default value
+        # Dropdown menus
         self.start_node_menu = OptionMenu(self, self.start_node_var, "Select Node")
-        self.start_node_menu.pack()
+        self.start_node_menu.grid(row=2, column=1, sticky='we')
 
         self.end_node_menu = OptionMenu(self, self.end_node_var, "Select Node")
-        self.end_node_menu.pack()
+        self.end_node_menu.grid(row=3, column=1, sticky='we')
 
+        # Weight entry field
         self.weight_entry = Entry(self, textvariable=self.weight_var)
-        self.weight_entry.pack()
+        self.weight_entry.grid(row=4, column=1, sticky='we')
 
+        # Labels for the dropdown menus and weight input
+        self.start_node_label = Label(self, text="Start Node:")
+        self.start_node_label.grid(row=2, column=0, sticky='e')
+
+        self.end_node_label = Label(self, text="End Node:")
+        self.end_node_label.grid(row=3, column=0, sticky='e')
+
+        self.weight_label = Label(self, text="Weight:")
+        self.weight_label.grid(row=4, column=0, sticky='e')
+        
+        # Buttons
         self.create_edge_button = Button(self, text="Create Edge", command=self.manual_create_edge)
-        self.create_edge_button.pack()
+        self.create_edge_button.grid(row=5, column=0, columnspan=2, pady=5)
 
-        # Finalize Graph button
-        self.finalize_button = Button(self, text="Finalize Graph", command=self.finalize_graph)
-        self.finalize_button.pack()
+        self.finalize_button = Button(self, text="Run Prim's", command=self.generate_mst)
+        self.finalize_button.grid(row=6, column=0, columnspan=2, pady=5)
+
+        self.reset_button = Button(self, text="Reset Graph", command=self.reset_graph)
+        self.reset_button.grid(row=7, column=0, columnspan=2, pady=5)
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
-   
-        # Reset Graph button
-        self.reset_button = Button(self, text="Reset Graph", command=self.reset_graph)
-        self.reset_button.pack()
 
         # Bind mouse events
         self.canvas.bind("<Button-1>", self.left_click_handler)
@@ -70,6 +82,11 @@ class GraphApp(tk.Tk):
     
         # Bind right-click events
         self.canvas.bind("<Button-3>", self.right_click_handler)
+
+        # Configure the grid layout to allow for resizing
+        self.columnconfigure(1, weight=1)
+        for i in range(8):  # Assuming 8 is the number of rows you are using
+            self.rowconfigure(i, weight=1)
 
 
     def generate_node_identifier(self):
@@ -82,28 +99,38 @@ class GraphApp(tk.Tk):
             return self.generate_node_identifier(quotient - 1) + alphabet[remainder]
 
     def update_node_options(self):
-        # Update the options in the dropdown menus
-        menu = self.start_node_menu["menu"]
-        menu.delete(0, "end")
+        # Update the options in the dropdown menus for start nodes
+        start_menu = self.start_node_menu["menu"]
+        start_menu.delete(0, "end")
         for node in self.nodes:
-            menu.add_command(label=f"Node {node.id}", command=tk._setit(self.start_node_var, f"Node {node.id}"))
+            print(f"Adding {node.identifier} to start node menu")
+            start_menu.add_command(label=node.identifier, command=tk._setit(self.start_node_var, node.identifier))
 
-        menu = self.end_node_menu["menu"]
-        menu.delete(0, "end")
+        # Update the options in the dropdown menus for end nodes
+        end_menu = self.end_node_menu["menu"]
+        end_menu.delete(0, "end")
         for node in self.nodes:
-            menu.add_command(label=f"Node {node.id}", command=tk._setit(self.end_node_var, f"Node {node.id}"))
+            print(f"Adding {node.identifier} to end node menu")
+            end_menu.add_command(label=node.identifier, command=tk._setit(self.end_node_var, node.identifier))
+
 
     def manual_create_edge(self):
         # Create an edge from the selected options in the dropdown menus
-        start_node_id = int(self.start_node_var.get().split()[1])
-        end_node_id = int(self.end_node_var.get().split()[1])
+        start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
+        end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
         weight = float(self.weight_var.get())
 
-        start_node = next(node for node in self.nodes if node.id == start_node_id)
-        end_node = next(node for node in self.nodes if node.id == end_node_id)
+        # Find the start and end nodes by their identifiers
+        start_node = next((node for node in self.nodes if node.identifier == start_node_identifier), None)
+        end_node = next((node for node in self.nodes if node.identifier == end_node_identifier), None)
 
-        edge = Edge(start_node, end_node, weight)
-        self.create_edge(edge)
+        if start_node and end_node:
+            # Only create the edge if both start and end nodes are found
+            edge = Edge(start_node, end_node, weight)
+            self.create_edge(edge)
+        else:
+            print(f"Could not find nodes with identifiers {start_node_identifier} and {end_node_identifier}")
+
 
     def left_click_handler(self, event):
         x, y = event.x, event.y
@@ -230,11 +257,6 @@ class GraphApp(tk.Tk):
                 return node
         return None
 
-    def finalize_graph(self):
-        # Implement this method to indicate that the graph is finalized
-        # You can disable further editing or perform any necessary actions
-        self.status_label.config(text="Graph Finalized")
-
     def reset_graph(self):
         # Clear the canvas
         self.canvas.delete("all")
@@ -249,6 +271,100 @@ class GraphApp(tk.Tk):
 
         # Reset UI components if necessary
         self.status_label.config(text="Graph Drawing Mode")
+
+    ##########################################
+    # All of below is for Prim's integration #
+    ##########################################
+    
+    # Extracts the graph data from the drawn nodes and edges
+    def extract_graph_data(self):
+        V = set(node.identifier for node in self.nodes)
+        E = set()
+        W = {}
+
+        for edge in self.edges:
+            start_id = edge.start_node.identifier
+            end_id = edge.end_node.identifier
+
+            E.add((start_id, end_id))
+            W[(start_id, end_id)] = edge.weight
+
+        return V, E, W
+    
+    @staticmethod
+    # prim_minimum_spanning_tree function from correctPrims.py
+    def prim_minimum_spanning_tree(graph):
+        V, E, W = graph
+        Te = set()  # Set of edges in the minimum spanning tree
+        Tv = set()  # Set of visited vertices
+        u = next(iter(V))  # Starting vertex, choosing any vertex in V
+        L = {}      # Dictionary for L values of each edge
+
+        Tv.add(u)           #Adding initial vertex to Tv
+
+        # Initialize L(v) for all vertices
+        for v in V - Tv:
+            if (u, v) in E:
+                L[v] = W[(u, v)]
+            elif (v, u) in E:
+                L[v] = W[(v, u)]
+            else:
+                L[v] = float("inf")
+
+        print("Initial L table for vertex u:", L)
+        print("\nStarting with vertex:", u)
+
+        while Tv != V:
+            # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
+            w = min((v for v in (V - Tv)), key=lambda v: L[v])
+
+            # Find the associated edge e from TV
+            e = None
+            min_weight = float('inf')
+            for v in Tv:
+                if (v, w) in E and W[(v, w)] < min_weight:
+                    e = (v, w)
+                    min_weight = W[(v, w)]
+                elif (w, v) in E and W[(w, v)] < min_weight:
+                    e = (w, v)
+                    min_weight = W[(w, v)]
+
+            # Add the edge e to TE
+            Te.add(e)
+
+            # Update TV
+            Tv.add(w)
+
+            print(f"\nAdded edge {e} to the minimum spanning tree.")
+            print("Current minimum spanning tree edges:", Te)
+
+            # Update L(v) for v ∈ (V − Tv) if there is an edge (w, v) or (v, w) in E with weight less than L(v)
+            for v in (V - Tv):
+                if (w, v) in E and W[(w, v)] < L[v]:
+                    L[v] = W[(w, v)]
+                elif (v, w) in E and W[(v, w)] < L[v]:
+                    L[v] = W[(v, w)]
+
+            print("\nUpdated L table after including vertex", w, ":", L)
+
+        return Te
+    
+    def visualize_mst(self, mst_edges):
+        for edge in self.edges:
+            start_id = edge.start_node.identifier
+            end_id = edge.end_node.identifier
+
+            if (start_id, end_id) in mst_edges or (end_id, start_id) in mst_edges:
+                # Highlight the edge to indicate it's part of the MST
+                self.canvas.itemconfig(edge.line_id, fill="orange", width=3)
+    
+    def generate_mst(self):
+        V, E, W = self.extract_graph_data()
+        mst_edges = self.prim_minimum_spanning_tree((V, E, W))
+        self.visualize_mst(mst_edges)
+
+
+    
 
 if __name__ == "__main__":
     app = GraphApp()
