@@ -115,21 +115,28 @@ class GraphApp(tk.Tk):
 
 
     def manual_create_edge(self):
-        # Create an edge from the selected options in the dropdown menus
-        start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
-        end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
-        weight = float(self.weight_var.get())
+        try:
+            start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
+            end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
+            weight = float(self.weight_var.get())  # This might throw ValueError if not a valid float
 
-        # Find the start and end nodes by their identifiers
-        start_node = next((node for node in self.nodes if node.identifier == start_node_identifier), None)
-        end_node = next((node for node in self.nodes if node.identifier == end_node_identifier), None)
+            start_node = next((node for node in self.nodes if node.identifier == start_node_identifier), None)
+            end_node = next((node for node in self.nodes if node.identifier == end_node_identifier), None)
 
-        if start_node and end_node:
-            # Only create the edge if both start and end nodes are found
+            if not start_node or not end_node:
+                raise ValueError("Invalid node selection.")
+
+            if start_node == end_node:
+                raise ValueError("Start node and end node cannot be the same.")
+            
+            if weight <= 0:
+                raise ValueError("Weight must be a positive number.")
+
             edge = Edge(start_node, end_node, weight)
             self.create_edge(edge)
-        else:
-            print(f"Could not find nodes with identifiers {start_node_identifier} and {end_node_identifier}")
+        except ValueError as e:
+            print(f"Error creating edge: {e}")
+            self.status_label.config(text=f"Error: {e}")
 
 
     def left_click_handler(self, event):
@@ -205,9 +212,21 @@ class GraphApp(tk.Tk):
             self.selected_node.y = y
 
             if self.drag_start_pos:
+                # Calculate the delta (change) in x and y
+                dx = x - self.drag_start_pos[0]
+                dy = y - self.drag_start_pos[1]
+
                 # If a drag has started, update the position of the selected node
-                self.canvas.move(self.selected_node.id, x - self.drag_start_pos[0], y - self.drag_start_pos[1])
+                self.canvas.move(self.selected_node.id, dx, dy)
+
+                # Also move the text identifier along with the node
+                self.canvas.move(self.selected_node.text_id, dx, dy)
+
+                # Update the drag start position for the next event
                 self.drag_start_pos = (x, y)
+
+                self.canvas.tag_raise(self.selected_node.id)
+                self.canvas.tag_raise(self.selected_node.text_id)
 
     def release_handler(self, event):
         x, y = event.x, event.y
@@ -250,6 +269,10 @@ class GraphApp(tk.Tk):
         edge.text_id = self.canvas.create_text(weight_text_x, weight_text_y, text=str(edge.weight), font=("Arial", 12), fill="black")
 
         self.edges.append(edge)
+
+        for node in self.nodes:
+            self.canvas.tag_raise(node.id)
+            self.canvas.tag_raise(node.text_id)
 
     def find_node(self, x, y):
         for node in self.nodes:
@@ -359,9 +382,39 @@ class GraphApp(tk.Tk):
                 self.canvas.itemconfig(edge.line_id, fill="orange", width=3)
     
     def generate_mst(self):
-        V, E, W = self.extract_graph_data()
-        mst_edges = self.prim_minimum_spanning_tree((V, E, W))
-        self.visualize_mst(mst_edges)
+        try:
+            if len(self.nodes) == 0:
+                raise ValueError("No nodes in the graph.")
+
+            V, E, W = self.extract_graph_data()
+            if not self.is_graph_connected(V, E):
+                raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
+
+            mst_edges = self.prim_minimum_spanning_tree((V, E, W))
+            self.visualize_mst(mst_edges)
+        except ValueError as e:
+            print(f"Error: {e}")
+            self.status_label.config(text=f"Error: {e}")
+    
+    # Checks if the graph is connected using depth-first search
+    def is_graph_connected(self, V, E):
+        if not V:
+            return False
+
+        visited = set()
+
+        def dfs(v):
+            if v in visited:
+                return
+            visited.add(v)
+            for u in V:
+                if (v, u) in E or (u, v) in E:
+                    dfs(u)
+
+        # Start DFS from the first node in V
+        dfs(next(iter(V)))
+
+        return visited == V
 
 
     
