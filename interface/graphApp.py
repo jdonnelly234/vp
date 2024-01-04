@@ -18,7 +18,7 @@ class Edge:
         self.weight = weight
         self.line_id = None  # To store the ID of the line on the canvas
         self.text_id = None  # To store the ID of the text label for the weight
-
+        self.midpoint_id = None  # New attribute for the midpoint oval
 
 class GraphApp(tk.Tk):
     def __init__(self):
@@ -93,9 +93,6 @@ class GraphApp(tk.Tk):
         self.canvas.bind("<Button-1>", self.left_click_handler)
         self.canvas.bind("<B1-Motion>", self.drag_handler)
         self.canvas.bind("<ButtonRelease-1>", self.release_handler)
-    
-        # Bind right-click events
-        self.canvas.bind("<Button-3>", self.right_click_handler)
 
         # Configure the grid layout to allow for resizing
         self.columnconfigure(1, weight=1)
@@ -111,6 +108,7 @@ class GraphApp(tk.Tk):
             return alphabet[remainder]
         else:
             return self.generate_node_identifier(quotient - 1) + alphabet[remainder]
+
 
     def update_node_options(self):
         # Update the options in the dropdown menus for start nodes
@@ -165,26 +163,12 @@ class GraphApp(tk.Tk):
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill="blue")
+            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
             self.nodes.append(new_node)
             self.node_counter += 1
             self.update_node_options()  # Update dropdown menus when a new node is added
 
-    def right_click_handler(self, event):
-        x, y = event.x, event.y
-        clicked_node = self.find_node(x, y)
-
-        if clicked_node:
-            # If a node is right-clicked, initiate the edge creation process
-            self.selected_node = clicked_node
-            self.selected_edge = Edge(clicked_node, None, 0)
-            self.status_label.config(text="Drag to another node to create or connect an edge")
-
-            # Bind additional events for right-click
-            self.canvas.bind("<B2-Motion>", self.edge_drag_handler)
-            self.canvas.bind("<ButtonRelease-2>", self.edge_release_handler)
-            print("Right-clicked on an existing node")  
 
     def edge_drag_handler(self, event):
         x, y = event.x, event.y
@@ -198,6 +182,7 @@ class GraphApp(tk.Tk):
                 x, y, width=2, fill="black"  # Set the color to black
             )
 
+
     def edge_release_handler(self, event):
         x, y = event.x, event.y
         released_node = self.find_node(x, y)
@@ -208,6 +193,8 @@ class GraphApp(tk.Tk):
                 self.selected_edge.end_node = released_node
                 self.create_edge(self.selected_edge)
                 self.status_label.config(text="Graph Drawing Mode")
+                self.canvas.delete(self.selected_edge.line_id)
+                self.canvas.delete(self.selected_edge.midpoint_id)  
             else:
                 # If released on an empty area, delete the temporary edge
                 if hasattr(self, 'selected_edge') and self.selected_edge:
@@ -216,6 +203,7 @@ class GraphApp(tk.Tk):
         # Reset selected node and drag start position
         self.selected_node = None
         self.drag_start_pos = None
+
 
     # Handles scenarios where user drags nodes around
     def drag_handler(self, event):
@@ -231,35 +219,35 @@ class GraphApp(tk.Tk):
             self.selected_node.x = new_x
             self.selected_node.y = new_y
         
-            # Move the node
+            # Move the node and its text identifier
             self.canvas.move(self.selected_node.id, dx, dy)
-        
-            # Move the text identifier along with the node
             self.canvas.move(self.selected_node.text_id, dx, dy)
         
             # Update connected edges
             for edge in self.edges:
-                if edge.start_node == self.selected_node:
-                    # If the selected node is the start node, update the start position of the edge
-                    self.canvas.coords(edge.line_id, new_x, new_y, edge.end_node.x, edge.end_node.y)
+                if edge.start_node == self.selected_node or edge.end_node == self.selected_node:
+                    # Move edge
+                    self.canvas.coords(edge.line_id, 
+                                   edge.start_node.x, edge.start_node.y, 
+                                   edge.end_node.x, edge.end_node.y)
                 
-                    # Also update the position of the weight label
-                    mid_x = (new_x + edge.end_node.x) / 2
-                    mid_y = (new_y + edge.end_node.y) / 2
-                    self.canvas.coords(edge.text_id, mid_x, mid_y)
+                    # Calculate new midpoint position
+                    mid_x = (edge.start_node.x + edge.end_node.x) / 2
+                    mid_y = (edge.start_node.y + edge.end_node.y) / 2
                 
-                elif edge.end_node == self.selected_node:
-                    # If the selected node is the end node, update the end position of the edge
-                    self.canvas.coords(edge.line_id, edge.start_node.x, edge.start_node.y, new_x, new_y)
+                    # Move midpoint oval
+                    if edge.midpoint_id is not None:
+                        self.canvas.coords(edge.midpoint_id,
+                                       mid_x - 8, mid_y - 8, 
+                                       mid_x + 8, mid_y + 8)
                 
-                    # Also update the position of the weight label
-                    mid_x = (edge.start_node.x + new_x) / 2
-                    mid_y = (edge.start_node.y + new_y) / 2
-                    self.canvas.coords(edge.text_id, mid_x, mid_y)
-        
-            # Bring the node and its text identifier to the top of the stack
-            self.canvas.tag_raise(self.selected_node.id)
-            self.canvas.tag_raise(self.selected_node.text_id)
+                    # Move weight label
+                    if edge.text_id is not None:
+                        self.canvas.coords(edge.text_id, mid_x, mid_y)
+                
+                    # Bring edge, midpoint, and label to top
+                    self.canvas.tag_raise(edge.midpoint_id)
+                    self.canvas.tag_raise(edge.text_id)
 
 
     def release_handler(self, event):
@@ -281,6 +269,7 @@ class GraphApp(tk.Tk):
         self.selected_node = None
         self.drag_start_pos = None
 
+
     # For creating an edge between two nodes
     def create_edge(self, edge):
         # Calculate the midpoint for the weight label
@@ -293,21 +282,23 @@ class GraphApp(tk.Tk):
             edge.end_node.x, edge.end_node.y, width=2, fill="black"
         )
 
-        # Offset for the weight text to appear above the line
-        text_offset = 20  # You can adjust this value as needed
-
-        # Calculate the position for the weight text
-        weight_text_x = mid_x
-        weight_text_y = mid_y - text_offset
+        # Create an oval at the midpoint to serve as a more visible midpoint marker
+        edge.midpoint_id = self.canvas.create_oval(
+            mid_x - 8, mid_y - 8, mid_x + 8, mid_y + 8, fill="white", outline="black"
+        )
 
         # Create the text for the weight
-        edge.text_id = self.canvas.create_text(weight_text_x, weight_text_y, text=str(edge.weight), font=("Arial", 12), fill="black")
+        edge.text_id = self.canvas.create_text(mid_x, mid_y, text=str(edge.weight), font=("Arial", 12), fill="black")
 
         self.edges.append(edge)
+
+        # Ensure the text is above the oval
+        self.canvas.tag_raise(edge.text_id)
 
         for node in self.nodes:
             self.canvas.tag_raise(node.id)
             self.canvas.tag_raise(node.text_id)
+
 
     # Finds the node that was clicked on for drag_handler and release_handler
     def find_node(self, x, y):
@@ -316,6 +307,7 @@ class GraphApp(tk.Tk):
                 return node
         return None
     
+
     # Generates a random graph on the canvas to save user time
     def generate_random_graph(self):
         self.reset_graph()  # Clear the existing graph
@@ -326,7 +318,7 @@ class GraphApp(tk.Tk):
             x, y = random.randint(20, 780), random.randint(20, 580)  # Random position within canvas
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill="blue")
+            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -359,7 +351,7 @@ class GraphApp(tk.Tk):
                 created_edges.add((start_node.identifier, end_node.identifier))
 
 
-
+    # Resets the graph for blank canvas
     def reset_graph(self):
         # Clear the canvas
         self.canvas.delete("all")
@@ -372,13 +364,18 @@ class GraphApp(tk.Tk):
         self.node_counter = 0
         self.update_node_options()
 
-        # Reset UI components if necessary
+        # Reset UI components 
         self.status_label.config(text="Graph Drawing Mode")
+
+        # Clear the info text widget 
+        self.info_text_widget.delete("1.0", tk.END) 
+
 
     ##########################################
     # All of below is for Prim's integration #
     ##########################################
     
+
     # Extracts the graph data from the drawn nodes and edges
     def extract_graph_data(self):
         V = set(node.identifier for node in self.nodes)
@@ -394,6 +391,7 @@ class GraphApp(tk.Tk):
 
         return V, E, W
     
+
     # prim_minimum_spanning_tree function from correctPrims.py
     def prim_minimum_spanning_tree(self, graph, start_vertex):
         V, E, W = graph
@@ -413,12 +411,14 @@ class GraphApp(tk.Tk):
             else:
                 L[v] = float("inf")
 
-        self.update_info_text(f"Initial L table for vertex {u}: {L}\n")
-        yield None, u # Pause the algorithm 
+        first_iter = True
 
         while Tv != V:
             # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
             w = min((v for v in (V - Tv)), key=lambda v: L[v])
+
+            if first_iter:
+                self.update_info_text(f"Starting with vertex {w}\n")
 
             # Find the associated edge e from TV
             e = None
@@ -432,7 +432,8 @@ class GraphApp(tk.Tk):
                     min_weight = W[(w, v)]
 
             # Add the edge e to TE
-            Te.add(e)
+            if e != None:
+                Te.add(e)
 
             # Update TV
             Tv.add(w)
@@ -450,11 +451,17 @@ class GraphApp(tk.Tk):
                     L[v] = W[(v, w)]
 
             print("\nUpdated L table after including vertex", w, ":", L)
-            self.update_info_text(f"Updated L table: {L}\nCurrent MST edges: {Te}\n")
-            yield
+
+            # During the first iteration, update the info text
+            if first_iter:
+                self.update_info_text(f"Initial L table for vertex {w}: {L}\n")
+                first_iter = False  # Ensuring this only happens once
+            else:
+                self.update_info_text(f"Updated L table: {L}\nCurrent MST edges: {Te}\n")
 
         return Te
     
+
     def visualize_mst(self, edge_added):
         # Highlight only the added edge
         start_id, end_id = edge_added
@@ -463,6 +470,7 @@ class GraphApp(tk.Tk):
                 (edge.start_node.identifier == end_id and edge.end_node.identifier == start_id):
                 self.canvas.itemconfig(edge.line_id, fill="orange", width=3)
                 break  # Once the edge is found and highlighted, exit the loop
+
 
     def highlight_node(self, node_identifier):
         # Find the node by its identifier and update its color to indicate it's been visited
@@ -476,6 +484,15 @@ class GraphApp(tk.Tk):
         try:
             if len(self.nodes) == 0:
                 raise ValueError("No nodes in the graph.")
+            
+            # Reset colors of nodes and edges
+            for node in self.nodes:
+                self.canvas.itemconfig(node.id, fill="blue")  # Reset node color to blue
+            for edge in self.edges:
+                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
+            
+            # Clears the info text widget 
+            self.info_text_widget.delete("1.0", tk.END)  
 
             V, E, W = self.extract_graph_data()
 
@@ -498,6 +515,7 @@ class GraphApp(tk.Tk):
             print(f"Error: {e}")
             self.status_label.config(text=f"Error: {e}")
     
+
     # Checks if the graph is connected using depth-first search
     def is_graph_connected(self, V, E):
         if not V:
@@ -518,23 +536,25 @@ class GraphApp(tk.Tk):
 
         return visited == V
     
+
     def next_step(self):
         try:
-            # Proceed to the next step in the generator, which should return a pair (edge_added, node_visited)
+            # Proceed to the next step in the generator
             edge_added, node_visited = next(self.prim_generator)
         
             # Highlight the added edge
             if edge_added:
                 self.visualize_mst(edge_added)
-        
+                
             # Highlight the visited node
             if node_visited:
                 self.highlight_node(node_visited)
 
         except StopIteration:
             # Algorithm is complete if it gets here
-            self.next_step_button.config(state='disabled')  # Disable the button since the algorithm is finished
+            self.next_step_button.config(state='disabled')  # Disable next step button since prim's is finished
             self.update_info_text("Prim's algorithm is complete.\n")
+
 
     def update_info_text(self, message):
         self.info_text_widget.insert(tk.END, message)
