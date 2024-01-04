@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Canvas, Label, Button, OptionMenu, StringVar, Entry
+import random
 
 class Node:
     def __init__(self, x, y, identifier):
@@ -25,7 +26,7 @@ class GraphApp(tk.Tk):
         self.title("Prim's Algorithm Visualizer")
 
         self.canvas = Canvas(self, width=800, height=600, bg="white")
-        self.canvas.grid(row=0, column=0, columnspan=4)  # Span across multiple columns
+        self.canvas.grid(row=0, column=0, rowspan=8, sticky='nsew')  
 
         self.nodes = []  # List to store nodes
         self.edges = []  # List to store edges
@@ -35,7 +36,7 @@ class GraphApp(tk.Tk):
 
         # UI components
         self.status_label = Label(self, text="Graph Drawing Mode")
-        self.status_label.grid(row=1, column=0, columnspan=4)
+        self.status_label.grid(row=0, column=0, columnspan=4, sticky='nw')
 
         # Dropdown menus and weight input
         self.start_node_var = StringVar(self)
@@ -44,34 +45,47 @@ class GraphApp(tk.Tk):
 
         # Dropdown menus
         self.start_node_menu = OptionMenu(self, self.start_node_var, "Select Node")
-        self.start_node_menu.grid(row=2, column=1, sticky='we')
+        self.start_node_menu.grid(row=0, column=1, sticky='e')
 
         self.end_node_menu = OptionMenu(self, self.end_node_var, "Select Node")
-        self.end_node_menu.grid(row=3, column=1, sticky='we')
+        self.end_node_menu.grid(row=1, column=1, sticky='e')
 
         # Weight entry field
         self.weight_entry = Entry(self, textvariable=self.weight_var)
-        self.weight_entry.grid(row=4, column=1, sticky='we')
+        self.weight_entry.grid(row=2, column=1, sticky='e')
 
         # Labels for the dropdown menus and weight input
         self.start_node_label = Label(self, text="Start Node:")
-        self.start_node_label.grid(row=2, column=0, sticky='e')
+        self.start_node_label.grid(row=0, column=1, sticky='ne')
 
         self.end_node_label = Label(self, text="End Node:")
-        self.end_node_label.grid(row=3, column=0, sticky='e')
+        self.end_node_label.grid(row=1, column=1, sticky='ne')
 
         self.weight_label = Label(self, text="Weight:")
-        self.weight_label.grid(row=4, column=0, sticky='e')
+        self.weight_label.grid(row=2, column=1, sticky='ne')
         
         # Buttons
         self.create_edge_button = Button(self, text="Create Edge", command=self.manual_create_edge)
-        self.create_edge_button.grid(row=5, column=0, columnspan=2, pady=5)
+        self.create_edge_button.grid(row=3, column=1, columnspan=2, pady=5)
 
         self.finalize_button = Button(self, text="Run Prim's", command=self.generate_mst)
-        self.finalize_button.grid(row=6, column=0, columnspan=2, pady=5)
+        self.finalize_button.grid(row=4, column=1, columnspan=2, pady=5)
 
         self.reset_button = Button(self, text="Reset Graph", command=self.reset_graph)
-        self.reset_button.grid(row=7, column=0, columnspan=2, pady=5)
+        self.reset_button.grid(row=5, column=1, columnspan=2, pady=5)
+
+        self.random_graph_button = Button(self, text="Generate Random Graph", command=self.generate_random_graph)
+        self.random_graph_button.grid(row=6, column=1, columnspan=2, pady=5)
+
+
+        # Text widget to display the L table and other information
+        self.info_text_widget = tk.Text(self, height=10, width=50)
+        self.info_text_widget.grid(row=8, column=0, columnspan=4)
+
+        # Add a "Next Step" button to proceed through the algorithm
+        self.next_step_button = Button(self, text="Next Step", command=self.next_step)
+        self.next_step_button.grid(row=9, column=0, columnspan=2, pady=5)
+        self.next_step_button.config(state='disabled')  # Disabled by default, enabled when Prim's starts
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
@@ -170,7 +184,7 @@ class GraphApp(tk.Tk):
             # Bind additional events for right-click
             self.canvas.bind("<B2-Motion>", self.edge_drag_handler)
             self.canvas.bind("<ButtonRelease-2>", self.edge_release_handler)
-            print("Right-clicked on an existing node")  # Add this line to print a message
+            print("Right-clicked on an existing node")  
 
     def edge_drag_handler(self, event):
         x, y = event.x, event.y
@@ -203,30 +217,50 @@ class GraphApp(tk.Tk):
         self.selected_node = None
         self.drag_start_pos = None
 
+    # Handles scenarios where user drags nodes around
     def drag_handler(self, event):
         if self.selected_node:
-            x, y = event.x, event.y
+            # New x, y coordinates after the drag
+            new_x, new_y = event.x, event.y
+        
+            # Calculate the deltas
+            dx = new_x - self.selected_node.x
+            dy = new_y - self.selected_node.y
 
             # Update the position of the selected node
-            self.selected_node.x = x
-            self.selected_node.y = y
+            self.selected_node.x = new_x
+            self.selected_node.y = new_y
+        
+            # Move the node
+            self.canvas.move(self.selected_node.id, dx, dy)
+        
+            # Move the text identifier along with the node
+            self.canvas.move(self.selected_node.text_id, dx, dy)
+        
+            # Update connected edges
+            for edge in self.edges:
+                if edge.start_node == self.selected_node:
+                    # If the selected node is the start node, update the start position of the edge
+                    self.canvas.coords(edge.line_id, new_x, new_y, edge.end_node.x, edge.end_node.y)
+                
+                    # Also update the position of the weight label
+                    mid_x = (new_x + edge.end_node.x) / 2
+                    mid_y = (new_y + edge.end_node.y) / 2
+                    self.canvas.coords(edge.text_id, mid_x, mid_y)
+                
+                elif edge.end_node == self.selected_node:
+                    # If the selected node is the end node, update the end position of the edge
+                    self.canvas.coords(edge.line_id, edge.start_node.x, edge.start_node.y, new_x, new_y)
+                
+                    # Also update the position of the weight label
+                    mid_x = (edge.start_node.x + new_x) / 2
+                    mid_y = (edge.start_node.y + new_y) / 2
+                    self.canvas.coords(edge.text_id, mid_x, mid_y)
+        
+            # Bring the node and its text identifier to the top of the stack
+            self.canvas.tag_raise(self.selected_node.id)
+            self.canvas.tag_raise(self.selected_node.text_id)
 
-            if self.drag_start_pos:
-                # Calculate the delta (change) in x and y
-                dx = x - self.drag_start_pos[0]
-                dy = y - self.drag_start_pos[1]
-
-                # If a drag has started, update the position of the selected node
-                self.canvas.move(self.selected_node.id, dx, dy)
-
-                # Also move the text identifier along with the node
-                self.canvas.move(self.selected_node.text_id, dx, dy)
-
-                # Update the drag start position for the next event
-                self.drag_start_pos = (x, y)
-
-                self.canvas.tag_raise(self.selected_node.id)
-                self.canvas.tag_raise(self.selected_node.text_id)
 
     def release_handler(self, event):
         x, y = event.x, event.y
@@ -247,6 +281,7 @@ class GraphApp(tk.Tk):
         self.selected_node = None
         self.drag_start_pos = None
 
+    # For creating an edge between two nodes
     def create_edge(self, edge):
         # Calculate the midpoint for the weight label
         mid_x = (edge.start_node.x + edge.end_node.x) / 2
@@ -274,11 +309,56 @@ class GraphApp(tk.Tk):
             self.canvas.tag_raise(node.id)
             self.canvas.tag_raise(node.text_id)
 
+    # Finds the node that was clicked on for drag_handler and release_handler
     def find_node(self, x, y):
         for node in self.nodes:
             if (node.x - 10) <= x <= (node.x + 10) and (node.y - 10) <= y <= (node.y + 10):
                 return node
         return None
+    
+    # Generates a random graph on the canvas to save user time
+    def generate_random_graph(self):
+        self.reset_graph()  # Clear the existing graph
+        num_nodes = random.randint(3, 6)  # Choose a random number of nodes
+
+        # Create random nodes
+        for _ in range(num_nodes):
+            x, y = random.randint(20, 780), random.randint(20, 580)  # Random position within canvas
+            node_identifier = self.generate_node_identifier()
+            new_node = Node(x, y, node_identifier)
+            new_node.id = self.canvas.create_oval(x - 10, y - 10, x + 10, y + 10, fill="blue")
+            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
+            self.nodes.append(new_node)
+            self.node_counter += 1
+
+        self.update_node_options()
+
+        # Start by creating a tree structure
+        for i in range(1, len(self.nodes)):
+            start_node = self.nodes[i - 1]
+            end_node = self.nodes[i]
+            weight = random.randint(1, 10)
+            new_edge = Edge(start_node, end_node, weight)
+            self.create_edge(new_edge)
+
+        # Set to store created edges (start_node, end_node)
+        created_edges = set((self.nodes[i-1].identifier, self.nodes[i].identifier) for i in range(1, len(self.nodes)))
+
+        # Random number of additional edges
+        num_additional_edges = random.randint(0, num_nodes * (num_nodes - 1) // 2 - num_nodes + 1)
+
+        while len(created_edges) < num_additional_edges + num_nodes - 1:
+            start_node, end_node = random.sample(self.nodes, 2)  # Select two distinct nodes
+            # Ensure uniqueness of edges
+            if (start_node.identifier, end_node.identifier) not in created_edges and \
+            (end_node.identifier, start_node.identifier) not in created_edges:
+
+                weight = random.randint(1, 10)  # Random weight
+                new_edge = Edge(start_node, end_node, weight)
+                self.create_edge(new_edge)
+                created_edges.add((start_node.identifier, end_node.identifier))
+
+
 
     def reset_graph(self):
         # Clear the canvas
@@ -314,13 +394,12 @@ class GraphApp(tk.Tk):
 
         return V, E, W
     
-    @staticmethod
     # prim_minimum_spanning_tree function from correctPrims.py
-    def prim_minimum_spanning_tree(graph):
+    def prim_minimum_spanning_tree(self, graph, start_vertex):
         V, E, W = graph
         Te = set()  # Set of edges in the minimum spanning tree
         Tv = set()  # Set of visited vertices
-        u = next(iter(V))  # Starting vertex, choosing any vertex in V
+        u = start_vertex  # Starting vertex
         L = {}      # Dictionary for L values of each edge
 
         Tv.add(u)           #Adding initial vertex to Tv
@@ -334,8 +413,8 @@ class GraphApp(tk.Tk):
             else:
                 L[v] = float("inf")
 
-        print("Initial L table for vertex u:", L)
-        print("\nStarting with vertex:", u)
+        self.update_info_text(f"Initial L table for vertex {u}: {L}\n")
+        yield None, u # Pause the algorithm 
 
         while Tv != V:
             # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
@@ -358,6 +437,8 @@ class GraphApp(tk.Tk):
             # Update TV
             Tv.add(w)
 
+            yield e, w  # Pause the algorithm and return the added edge
+
             print(f"\nAdded edge {e} to the minimum spanning tree.")
             print("Current minimum spanning tree edges:", Te)
 
@@ -369,17 +450,27 @@ class GraphApp(tk.Tk):
                     L[v] = W[(v, w)]
 
             print("\nUpdated L table after including vertex", w, ":", L)
+            self.update_info_text(f"Updated L table: {L}\nCurrent MST edges: {Te}\n")
+            yield
 
         return Te
     
-    def visualize_mst(self, mst_edges):
+    def visualize_mst(self, edge_added):
+        # Highlight only the added edge
+        start_id, end_id = edge_added
         for edge in self.edges:
-            start_id = edge.start_node.identifier
-            end_id = edge.end_node.identifier
-
-            if (start_id, end_id) in mst_edges or (end_id, start_id) in mst_edges:
-                # Highlight the edge to indicate it's part of the MST
+            if (edge.start_node.identifier == start_id and edge.end_node.identifier == end_id) or \
+                (edge.start_node.identifier == end_id and edge.end_node.identifier == start_id):
                 self.canvas.itemconfig(edge.line_id, fill="orange", width=3)
+                break  # Once the edge is found and highlighted, exit the loop
+
+    def highlight_node(self, node_identifier):
+        # Find the node by its identifier and update its color to indicate it's been visited
+        for node in self.nodes:
+            if node.identifier == node_identifier:
+                self.canvas.itemconfig(node.id, fill="orange")  # Colour visited node orange
+                break  # Break out of the loop once the node is found and highlighted
+
     
     def generate_mst(self):
         try:
@@ -387,11 +478,22 @@ class GraphApp(tk.Tk):
                 raise ValueError("No nodes in the graph.")
 
             V, E, W = self.extract_graph_data()
+
+            # Get the start node identifier from the dropdown
+            start_node_identifier = self.start_node_var.get()  
+            if start_node_identifier == "Select Node":
+                raise ValueError("Please select a start node for Prim's algorithm.")
+
             if not self.is_graph_connected(V, E):
                 raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
 
-            mst_edges = self.prim_minimum_spanning_tree((V, E, W))
-            self.visualize_mst(mst_edges)
+            # Initialize Prim's algorithm
+            self.prim_generator = self.prim_minimum_spanning_tree((V, E, W), start_node_identifier)
+            self.next_step_button.config(state='normal')  # Enable "Next Step" button
+
+            # Start the first step of Prim's algorithm
+            self.next_step()
+
         except ValueError as e:
             print(f"Error: {e}")
             self.status_label.config(text=f"Error: {e}")
@@ -415,23 +517,30 @@ class GraphApp(tk.Tk):
         dfs(next(iter(V)))
 
         return visited == V
-
-
     
+    def next_step(self):
+        try:
+            # Proceed to the next step in the generator, which should return a pair (edge_added, node_visited)
+            edge_added, node_visited = next(self.prim_generator)
+        
+            # Highlight the added edge
+            if edge_added:
+                self.visualize_mst(edge_added)
+        
+            # Highlight the visited node
+            if node_visited:
+                self.highlight_node(node_visited)
+
+        except StopIteration:
+            # Algorithm is complete if it gets here
+            self.next_step_button.config(state='disabled')  # Disable the button since the algorithm is finished
+            self.update_info_text("Prim's algorithm is complete.\n")
+
+    def update_info_text(self, message):
+        self.info_text_widget.insert(tk.END, message)
+        self.info_text_widget.see(tk.END)  
+
 
 if __name__ == "__main__":
     app = GraphApp()
     app.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
