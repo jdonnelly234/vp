@@ -82,7 +82,7 @@ class GraphApp(tk.Tk):
         self.info_text_widget = tk.Text(self, height=10, width=50)
         self.info_text_widget.grid(row=8, column=0, columnspan=4)
 
-        # Add a "Next Step" button to proceed through the algorithm
+        # "Next Step" button for proceeding through Prim's algorithm
         self.next_step_button = Button(self, text="Next Step", command=self.next_step)
         self.next_step_button.grid(row=9, column=0, columnspan=2, pady=5)
         self.next_step_button.config(state='disabled')  # Disabled by default, enabled when Prim's starts
@@ -144,7 +144,10 @@ class GraphApp(tk.Tk):
             if weight <= 0:
                 raise ValueError("Weight must be a positive number.")
 
+            print(f"Creating edge: {start_node.identifier} -> {end_node.identifier}, Weight: {weight}")
             edge = Edge(start_node, end_node, weight)
+            
+
             self.create_edge(edge)
         except ValueError as e:
             print(f"Error creating edge: {e}")
@@ -292,6 +295,8 @@ class GraphApp(tk.Tk):
 
         self.edges.append(edge)
 
+        print(f"Edge created in canvas: {edge.start_node.identifier} -> {edge.end_node.identifier}, Weight: {edge.weight}")
+
         # Ensure the text is above the oval
         self.canvas.tag_raise(edge.text_id)
 
@@ -389,19 +394,23 @@ class GraphApp(tk.Tk):
             E.add((start_id, end_id))
             W[(start_id, end_id)] = edge.weight
 
+        print(f"Vertices: {V}")
+        print(f"Edges: {E}")
+        print(f"Weights: {W}")
+
         return V, E, W
     
 
     # prim_minimum_spanning_tree function from correctPrims.py
-    def prim_minimum_spanning_tree(self, graph, start_vertex):
+    def prim_minimum_spanning_tree(self, graph):
         V, E, W = graph
         Te = set()  # Set of edges in the minimum spanning tree
         Tv = set()  # Set of visited vertices
-        u = start_vertex  # Starting vertex
+        u = next(iter(V))  # Starting vertex
         L = {}      # Dictionary for L values of each edge
 
         Tv.add(u)           #Adding initial vertex to Tv
-
+        
         # Initialize L(v) for all vertices
         for v in V - Tv:
             if (u, v) in E:
@@ -411,15 +420,26 @@ class GraphApp(tk.Tk):
             else:
                 L[v] = float("inf")
 
-        first_iter = True
+        print("Vertices: ", V)
+        print("Edges: ", E)
+        print("Weights: ", W)
+
+        print("\nStarting with vertex:", u)
+
+        self.update_info_text(f"Starting with vertex {u}\n\n")
+        yield
+
+        self.update_info_text(f"Initial L table for vertex {u}: {L}\n")
+        yield
 
         while Tv != V:
             # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
-            w = min((v for v in (V - Tv)), key=lambda v: L[v])
+            w = min((v for v in (V - Tv)), key=lambda v: L[v])                
+            
+            
+            self.update_info_text(f"Choosing next vertex {w} with the smallest L value.\n")
 
-            if first_iter:
-                self.update_info_text(f"Starting with vertex {w}\n")
-
+        
             # Find the associated edge e from TV
             e = None
             min_weight = float('inf')
@@ -452,13 +472,13 @@ class GraphApp(tk.Tk):
 
             print("\nUpdated L table after including vertex", w, ":", L)
 
-            # During the first iteration, update the info text
-            if first_iter:
-                self.update_info_text(f"Initial L table for vertex {w}: {L}\n")
-                first_iter = False  # Ensuring this only happens once
-            else:
-                self.update_info_text(f"Updated L table: {L}\nCurrent MST edges: {Te}\n")
-
+            
+            self.update_info_text(f"Updated L table: {L}\n\n")
+            yield
+            
+            self.update_info_text(f"Current visited vertices: {Tv}\n\n")
+            self.update_info_text(f"Current minimum spanning tree edges: {Te}\n\n")
+            yield
         return Te
     
 
@@ -496,17 +516,16 @@ class GraphApp(tk.Tk):
 
             V, E, W = self.extract_graph_data()
 
-            # Get the start node identifier from the dropdown
-            start_node_identifier = self.start_node_var.get()  
-            if start_node_identifier == "Select Node":
-                raise ValueError("Please select a start node for Prim's algorithm.")
-
             if not self.is_graph_connected(V, E):
                 raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
 
             # Initialize Prim's algorithm
-            self.prim_generator = self.prim_minimum_spanning_tree((V, E, W), start_node_identifier)
+            self.prim_generator = self.prim_minimum_spanning_tree((V, E, W))
             self.next_step_button.config(state='normal')  # Enable "Next Step" button
+
+            # Highlight the starting node
+            start_node_identifier = next(iter(V))  # Assuming this is how you get the starting node
+            self.highlight_node(start_node_identifier)  # Highlight the starting node
 
             # Start the first step of Prim's algorithm
             self.next_step()
@@ -540,15 +559,18 @@ class GraphApp(tk.Tk):
     def next_step(self):
         try:
             # Proceed to the next step in the generator
-            edge_added, node_visited = next(self.prim_generator)
+            result = next(self.prim_generator)
         
-            # Highlight the added edge
-            if edge_added:
-                self.visualize_mst(edge_added)
+            if result is not None:
+                edge_added, node_visited = result
+
+                # Highlight the added edge
+                if edge_added:
+                    self.visualize_mst(edge_added)
                 
-            # Highlight the visited node
-            if node_visited:
-                self.highlight_node(node_visited)
+                # Highlight the visited node
+                if node_visited:
+                    self.highlight_node(node_visited)
 
         except StopIteration:
             # Algorithm is complete if it gets here
