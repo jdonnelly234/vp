@@ -3,6 +3,7 @@ from customtkinter import E, END, N, NO, S, W, X, Y
 import tkinter as tk
 from tkinter import OptionMenu, StringVar, Entry
 import random
+import time
 
 class Node:
     def __init__(self, x, y, identifier):
@@ -20,15 +21,31 @@ class Edge:
         self.weight = weight
         self.line_id = None  # To store the ID of the line on the canvas
         self.text_id = None  # To store the ID of the text label for the weight
-        self.midpoint_id = None  # New attribute for the midpoint oval
+        self.midpoint_id = None  # For the midpoint oval
 
 class GraphApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Prim's Algorithm Visualizer")
-        self.geometry("1200x800")  
+        self.title("Visualising Prim's")
+        # Set the window size
+        window_width = 1200
+        window_height = 800
 
-        # Define frames for different sections
+        # Get the screen dimension
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        # Find the center point
+        center_x = int((screen_width - window_width) / 2)
+        center_y = int((screen_height - window_height) / 2)
+
+        # Set the position of the window to the center of the screen
+        self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+
+        # Minimum size for the window to avoid issues with resizing
+        self.minsize(window_width, window_height) 
+
+        # Frames for different sections
         self.left_frame = ctk.CTkFrame(self, width=200)
         self.left_frame.grid(row=0, column=0, sticky='ns', rowspan=14)
 
@@ -37,6 +54,9 @@ class GraphApp(ctk.CTk):
 
         self.right_frame = ctk.CTkFrame(self, width=200)
         self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8)
+
+        self.status_frame = ctk.CTkFrame(self, width=200)
+        self.status_frame.grid(row=0, column=0, pady=12, padx=15, columnspan=4, sticky='n')
 
         # Initialize canvas
         self.canvas = ctk.CTkCanvas(self.canvas_frame, width=700, height=568, bg="white")
@@ -49,8 +69,8 @@ class GraphApp(ctk.CTk):
         self.drag_start_pos = None
 
         # UI components
-        self.status_label = ctk.CTkLabel(self, text="Graph Drawing Mode")
-        self.status_label.grid(row=0, column=0, columnspan=4, sticky='n')
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Graph Drawing Mode")
+        self.status_label.pack(pady=1, padx=1)  # Use pack to add padding inside the frame
 
         # Dropdown menus and weight input
         self.start_node_var = StringVar(self)
@@ -59,24 +79,24 @@ class GraphApp(ctk.CTk):
         
         # Dropdown menus
         self.start_node_menu = OptionMenu(self, self.start_node_var, "Select Node")
-        self.start_node_menu.grid(in_=self.left_frame, row=0, column=0, pady=10, padx=10, sticky='ew')
+        self.start_node_menu.grid(in_=self.left_frame, row=0, column=1, pady=10, padx=10, sticky='ew')
 
         self.end_node_menu = OptionMenu(self, self.end_node_var, "Select Node")
-        self.end_node_menu.grid(in_=self.left_frame, row=1, column=0, pady=10, padx=10, sticky='ew')
+        self.end_node_menu.grid(in_=self.left_frame, row=1, column=1, pady=10, padx=10, sticky='ew')
 
         # Weight entry field
         self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var)
-        self.weight_entry.grid(in_=self.left_frame, row=2, column=0, pady=10, padx=10, sticky='ew')
+        self.weight_entry.grid(in_=self.left_frame, row=2, column=1, pady=10, padx=10, sticky='ew')
 
         # Labels for the dropdown menus and weight input
         self.start_node_label = ctk.CTkLabel(self, text="Start Node:")
-        self.start_node_label.grid(in_=self.left_frame, row=0, column=1, sticky='ne')
+        self.start_node_label.grid(in_=self.left_frame, row=0, column=0, sticky='nw')
 
         self.end_node_label = ctk.CTkLabel(self, text="End Node:")
-        self.end_node_label.grid(in_=self.left_frame, row=1, column=1, sticky='ne')
+        self.end_node_label.grid(in_=self.left_frame, row=1, column=0, sticky='nw')
 
         self.weight_label = ctk.CTkLabel(self, text="Weight:")
-        self.weight_label.grid(in_=self.left_frame, row=2, column=1, sticky='ne')
+        self.weight_label.grid(in_=self.left_frame, row=2, column=0, sticky='nw')
         
         # Buttons
         self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge)
@@ -88,13 +108,16 @@ class GraphApp(ctk.CTk):
         self.reset_button = ctk.CTkButton(self, text="Reset Graph", command=self.reset_graph)
         self.reset_button.grid(in_=self.left_frame, row=7, column=0, pady=10, padx=10, sticky='ew')
 
-        self.random_graph_button = ctk.CTkButton(self, text="Generate Random Graph", command=self.generate_random_graph)
+        self.random_graph_button = ctk.CTkButton(self, text="Generate Simple Graph", command=lambda: self.generate_random_graph(1))
         self.random_graph_button.grid(in_=self.left_frame, row=4, column=0, pady=10, padx=10, sticky='ew')
 
+        self.random_graph_button = ctk.CTkButton(self, text="Generate Complex Graph", command=lambda: self.generate_random_graph(2))
+        self.random_graph_button.grid(in_=self.left_frame, row=5, column=0, pady=10, padx=10, sticky='ew')
 
         # Text widget to display the L table and other information
         self.info_text_widget = ctk.CTkTextbox(self, height=600, width=300)
         self.info_text_widget.grid(in_=self.right_frame, row=1, column=0)
+
 
         # "Next Step" button for proceeding through Prim's algorithm
         self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step)
@@ -106,13 +129,33 @@ class GraphApp(ctk.CTk):
         # Bind mouse events
         self.canvas.bind("<Button-1>", self.left_click_handler)
         self.canvas.bind("<B1-Motion>", self.drag_handler)
-        self.canvas.bind("<ButtonRelease-1>", self.release_handler)
+        
+
+        # Placeholder for empty canvas message
+        self.placeholder_text_id = self.canvas.create_text(
+            self.canvas.winfo_width() / 2,
+            self.canvas.winfo_height() / 2,
+            text="Click on the canvas to create a node.",
+            fill="#bbbbbb",  # Light grey color
+            font=("TkDefaultFont", 16, "italic"),
+            state="normal"  # Starts with the text shown
+        )
 
         # Configure the grid layout to allow for resizing
         self.columnconfigure(1, weight=1)
-        for i in range(8):  # Assuming 8 is the number of rows you are using
+        for i in range(8):  
             self.rowconfigure(i, weight=1)
 
+
+    # Method to show the placeholder text
+    def show_placeholder_text(self):
+        if not self.nodes and not self.edges:  # If there are no nodes or edges
+            self.canvas.itemconfig(self.placeholder_text_id, state="normal")
+    
+    # Method to hide the placeholder text
+    def hide_placeholder_text(self):
+        self.canvas.itemconfig(self.placeholder_text_id, state="hidden")
+    
 
     def generate_node_identifier(self):
         # Generates a unique identifier for each node
@@ -144,7 +187,7 @@ class GraphApp(ctk.CTk):
         try:
             start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
             end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
-            weight = float(self.weight_var.get())  # This might throw ValueError if not a valid float
+            weight = int(self.weight_var.get())  # This might throw ValueError if not a valid float
 
             start_node = next((node for node in self.nodes if node.identifier == start_node_identifier), None)
             end_node = next((node for node in self.nodes if node.identifier == end_node_identifier), None)
@@ -155,8 +198,11 @@ class GraphApp(ctk.CTk):
             if start_node == end_node:
                 raise ValueError("Start node and end node cannot be the same.")
             
-            if weight <= 0:
-                raise ValueError("Weight must be a positive number.")
+            if weight <= 0 or not isinstance(weight, int):
+                raise ValueError("Weight must be a positive integer greater than zero.")
+            
+            if (start_node.identifier, end_node.identifier) in [(edge.start_node.identifier, edge.end_node.identifier) for edge in self.edges]:
+                raise ValueError(f"Edge already exists between {start_node_identifier} and {end_node_identifier}.")
 
             print(f"Creating edge: {start_node.identifier} -> {end_node.identifier}, Weight: {weight}")
             edge = Edge(start_node, end_node, weight)
@@ -171,16 +217,29 @@ class GraphApp(ctk.CTk):
     def left_click_handler(self, event):
         x, y = event.x, event.y
         clicked_node = self.find_node(x, y)
-
+        self.hide_placeholder_text()   # Hide the placeholder text
+        
         if clicked_node:
             # If a node is clicked, initiate the drag process
+            self.status_label.configure(text="Graph Drawing Mode")
             self.selected_node = clicked_node
             self.drag_start_pos = (x, y)
         else:
+            self.status_label.configure(text="Graph Drawing Mode")
+
+            # Reset colors of nodes and edges
+            for node in self.nodes:
+                self.canvas.itemconfig(node.id, fill="blue")  # Reset node color to blue
+            for edge in self.edges:
+                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
+            
+            # Clears the info text widget 
+            self.info_text_widget.delete("1.0", tk.END) 
+            
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue")
+            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue", outline = "black")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -268,26 +327,6 @@ class GraphApp(ctk.CTk):
                     self.canvas.tag_raise(edge.text_id)
 
 
-    def release_handler(self, event):
-        x, y = event.x, event.y
-        released_node = self.find_node(x, y)
-
-        if self.selected_node and released_node and self.selected_node != released_node:
-            if hasattr(self, 'selected_edge') and self.selected_edge:
-                # If released on an existing node, create an edge
-                self.selected_edge.end_node = released_node
-                self.create_edge(self.selected_edge)
-                self.status_label.configure(text="Graph Drawing Mode")
-            else:
-                # If released on an empty area, delete the temporary edge
-                if hasattr(self, 'selected_edge') and self.selected_edge:
-                    self.canvas.delete(self.selected_edge.line_id)
-
-        # Reset selected node and drag start position
-        self.selected_node = None
-        self.drag_start_pos = None
-
-
     # For creating an edge between two nodes
     def create_edge(self, edge):
         # Calculate the midpoint for the weight label
@@ -329,9 +368,14 @@ class GraphApp(ctk.CTk):
     
 
     # Generates a random graph on the canvas to save user time
-    def generate_random_graph(self):
+    def generate_random_graph(self, identifier):
         self.reset_graph()  # Clear the existing graph
-        num_nodes = random.randint(3, 6)  # Choose a random number of nodes
+        
+        if identifier == 1:
+            num_nodes = random.randint(3, 5)
+        elif identifier == 2:
+            num_nodes = random.randint(7, 10)
+
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
 
@@ -341,7 +385,7 @@ class GraphApp(ctk.CTk):
             y = random.randint(15, canvas_height - 15)
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue")
+            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue", outline = "black")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -373,6 +417,8 @@ class GraphApp(ctk.CTk):
                 self.create_edge(new_edge)
                 created_edges.add((start_node.identifier, end_node.identifier))
 
+        self.status_label.configure(text="Generated random graph")
+
 
     # Resets the graph for blank canvas
     def reset_graph(self):
@@ -388,10 +434,13 @@ class GraphApp(ctk.CTk):
         self.update_node_options()
 
         # Reset UI components 
-        self.status_label.configure(text="Graph Drawing Mode")
+        self.status_label.configure(text="Graph has been reset")
 
         # Clear the info text widget 
         self.info_text_widget.delete("1.0", tk.END) 
+
+        # Show the placeholder text
+        self.show_placeholder_text()  
 
 
     ##########################################
@@ -445,7 +494,7 @@ class GraphApp(ctk.CTk):
         print("\nStarting with vertex:", u)
 
         self.update_info_text(f"Starting with vertex {u}\n\n")
-        self.update_info_text(f"Initial L table for vertex {u}: {L}\n")
+        self.update_info_text(f"Initial L table for vertex {u}: {L}\n\n")
         yield
 
         while Tv != V:
@@ -493,7 +542,7 @@ class GraphApp(ctk.CTk):
             yield
             
             self.update_info_text(f"Current visited vertices: {Tv}\n\n")
-            self.update_info_text(f"Current minimum spanning tree edges: {Te}\n\n")
+            self.update_info_text(f"Updated minimum spanning tree edges: {Te}\n\n")
             yield
         return Te
     
@@ -512,12 +561,13 @@ class GraphApp(ctk.CTk):
         # Find the node by its identifier and update its color to indicate it's been visited
         for node in self.nodes:
             if node.identifier == node_identifier:
-                self.canvas.itemconfig(node.id, fill="orange")  # Colour visited node orange
+                self.canvas.itemconfig(node.id, fill="orange", outline = "black")  # Colour visited node orange
                 break  # Break out of the loop once the node is found and highlighted
 
     
     def generate_mst(self):
         try:
+            self.start_time = time.time()  # Record start time
             if len(self.nodes) == 0:
                 raise ValueError("No nodes in the graph.")
             
@@ -576,6 +626,7 @@ class GraphApp(ctk.CTk):
         try:
             # Proceed to the next step in the generator
             result = next(self.prim_generator)
+            self.status_label.configure(text="Running Prim's algorithm...")
         
             if result is not None:
                 edge_added, node_visited = result
@@ -590,8 +641,11 @@ class GraphApp(ctk.CTk):
 
         except StopIteration:
             # Algorithm is complete if it gets here
+            self.end_time = time.time()
+            execution_time = self.end_time - self.start_time
             self.next_step_button.configure(state='disabled')  # Disable next step button since prim's is finished
-            self.update_info_text("Prim's algorithm is complete.\n")
+            self.update_info_text(f"Prim's algorithm completed in {execution_time:.2f} seconds.\n")
+            self.status_label.configure(text="Prim's algorithm completed")
 
 
     def update_info_text(self, message):
