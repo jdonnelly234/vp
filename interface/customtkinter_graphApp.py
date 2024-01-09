@@ -108,10 +108,10 @@ class GraphApp(ctk.CTk):
         self.reset_button = ctk.CTkButton(self, text="Reset Graph", command=self.reset_graph)
         self.reset_button.grid(in_=self.left_frame, row=7, column=0, pady=10, padx=10, sticky='ew')
 
-        self.random_graph_button = ctk.CTkButton(self, text="Generate Simple Graph", command=lambda: self.generate_random_graph(1))
+        self.random_graph_button = ctk.CTkButton(self, text="Generate Simple Graph", command=lambda: self.generate_random_graph("simple"))
         self.random_graph_button.grid(in_=self.left_frame, row=4, column=0, pady=10, padx=10, sticky='ew')
 
-        self.random_graph_button = ctk.CTkButton(self, text="Generate Complex Graph", command=lambda: self.generate_random_graph(2))
+        self.random_graph_button = ctk.CTkButton(self, text="Generate Complex Graph", command=lambda: self.generate_random_graph("complex"))
         self.random_graph_button.grid(in_=self.left_frame, row=5, column=0, pady=10, padx=10, sticky='ew')
 
         # Text widget to display the L table and other information
@@ -371,9 +371,9 @@ class GraphApp(ctk.CTk):
     def generate_random_graph(self, identifier):
         self.reset_graph()  # Clear the existing graph
         
-        if identifier == 1:
+        if identifier == "simple":
             num_nodes = random.randint(3, 5)
-        elif identifier == 2:
+        elif identifier == "complex":
             num_nodes = random.randint(7, 10)
 
         canvas_width = self.canvas.winfo_width()
