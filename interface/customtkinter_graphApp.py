@@ -76,12 +76,13 @@ class GraphApp(ctk.CTk):
         self.start_node_var = StringVar(self)
         self.end_node_var = StringVar(self)
         self.weight_var = StringVar(self)
+        self.start_vertex_var = StringVar(self)
         
         # Dropdown menus
-        self.start_node_menu = OptionMenu(self, self.start_node_var, "Select Node")
+        self.start_node_menu = OptionMenu(self, self.start_node_var, "Add nodes to see them here")
         self.start_node_menu.grid(in_=self.left_frame, row=0, column=1, pady=10, padx=10, sticky='ew')
 
-        self.end_node_menu = OptionMenu(self, self.end_node_var, "Select Node")
+        self.end_node_menu = OptionMenu(self, self.end_node_var, "Add nodes to see them here")
         self.end_node_menu.grid(in_=self.left_frame, row=1, column=1, pady=10, padx=10, sticky='ew')
 
         # Weight entry field
@@ -101,6 +102,9 @@ class GraphApp(ctk.CTk):
         # Buttons
         self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge)
         self.create_edge_button.grid(in_=self.left_frame, row=3, column=0, pady=10, padx=10, sticky='ew')
+
+        self.start_vertex_menu = OptionMenu(self.right_frame, self.start_vertex_var, "Add nodes to see them here")
+        self.start_vertex_menu.grid(row=0, column=1, pady=10, padx=(1,10), sticky='e')
 
         self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst)
         self.finalize_button.grid(in_=self.right_frame, row=0, column=0, pady=10, padx=10, sticky='ew')
@@ -174,6 +178,7 @@ class GraphApp(ctk.CTk):
         for node in self.nodes:
             print(f"Adding {node.identifier} to start node menu")
             start_menu.add_command(label=node.identifier, command=tk._setit(self.start_node_var, node.identifier))
+            
 
         # Update the options in the dropdown menus for end nodes
         end_menu = self.end_node_menu["menu"]
@@ -181,6 +186,12 @@ class GraphApp(ctk.CTk):
         for node in self.nodes:
             print(f"Adding {node.identifier} to end node menu")
             end_menu.add_command(label=node.identifier, command=tk._setit(self.end_node_var, node.identifier))
+        
+        # Update the options in the dropdown menu for starting vertex
+        start_vertex_menu = self.start_vertex_menu["menu"]
+        start_vertex_menu.delete(0, "end")
+        for node in self.nodes:
+            start_vertex_menu.add_command(label=node.identifier, command=tk._setit(self.start_vertex_var, node.identifier))
 
 
     def manual_create_edge(self):
@@ -235,6 +246,8 @@ class GraphApp(ctk.CTk):
             
             # Clears the info text widget 
             self.info_text_widget.delete("1.0", tk.END) 
+
+            self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
             
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
@@ -473,7 +486,7 @@ class GraphApp(ctk.CTk):
         V, E, W = graph
         Te = set()  # Set of edges in the minimum spanning tree
         Tv = set()  # Set of visited vertices
-        u = next(iter(V))  # Starting vertex
+        u = self.start_vertex_var.get() if self.start_vertex_var.get() in V else next(iter(V))  # Starting vertex
         L = {}      # Dictionary for L values of each edge
 
         Tv.add(u)           #Adding initial vertex to Tv
@@ -582,15 +595,18 @@ class GraphApp(ctk.CTk):
 
             V, E, W = self.extract_graph_data()
 
-            if not self.is_graph_connected(V, E):
+            if not self.is_graph_connected(V, E):   # Check if the graph is connected
                 raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
 
+            if not self.start_vertex_var.get():     # Check if a starting vertex is selected
+                raise ValueError("Select a starting vertex.")
+            
             # Initialize Prim's algorithm
             self.prim_generator = self.prim_minimum_spanning_tree((V, E, W))
             self.next_step_button.configure(state='normal')  # Enable "Next Step" button
 
             # Highlight the starting node
-            start_node_identifier = next(iter(V))  # Assuming this is how you get the starting node
+            start_node_identifier = self.start_vertex_var.get() # Highlights starting node
             self.highlight_node(start_node_identifier)  # Highlight the starting node
 
             # Start the first step of Prim's algorithm
