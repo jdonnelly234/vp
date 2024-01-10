@@ -47,6 +47,8 @@ class GraphApp(ctk.CTk):
         # Minimum size for the window to avoid issues with resizing
         self.minsize(window_width, window_height) 
 
+        self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
+
         # Frames for different sections
         self.left_frame = ctk.CTkFrame(self, width=200)
         self.left_frame.grid(row=0, column=0, sticky='ns', rowspan=14)
@@ -55,10 +57,10 @@ class GraphApp(ctk.CTk):
         self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)
 
         self.right_frame = ctk.CTkFrame(self, width=200)
-        self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8)
+        self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8, columnspan=2)
 
         self.status_frame = ctk.CTkFrame(self, width=200)
-        self.status_frame.grid(row=0, column=0, pady=12, padx=15, columnspan=4, sticky='n')
+        self.status_frame.grid(row=0, column=0, pady=12, padx=50, columnspan=4, sticky='n')
 
         # Initialize canvas
         self.canvas = ctk.CTkCanvas(self.canvas_frame, width=700, height=568, bg="white")
@@ -79,6 +81,7 @@ class GraphApp(ctk.CTk):
         self.end_node_var = StringVar(self)
         self.weight_var = StringVar(self)
         self.start_vertex_var = StringVar(self)
+        self.delete_node_var = StringVar(self)
         
         # Dropdown menus
         self.start_node_menu = OptionMenu(self, self.start_node_var, "Add nodes to see them here")
@@ -86,6 +89,10 @@ class GraphApp(ctk.CTk):
 
         self.end_node_menu = OptionMenu(self, self.end_node_var, "Add nodes to see them here")
         self.end_node_menu.grid(in_=self.left_frame, row=1, column=1, pady=10, padx=10, sticky='ew')
+
+        # Dropdown menu for node deletion
+        self.delete_node_menu = OptionMenu(self.left_frame, self.delete_node_var, "Add nodes to see them here")
+        self.delete_node_menu.grid(row=6, column=0, pady=10, padx=10, sticky='ew')
 
         # Weight entry field
         self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var)
@@ -107,11 +114,12 @@ class GraphApp(ctk.CTk):
 
         self.start_vertex_menu = OptionMenu(self.right_frame, self.start_vertex_var, "Add nodes to see them here")
         self.start_vertex_menu.grid(row=0, column=1, pady=10, padx=(1,10), sticky='e')
+        self.start_vertex_var.set("Source")  # Default value
 
         self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst)
         self.finalize_button.grid(in_=self.right_frame, row=0, column=0, pady=10, padx=10, sticky='ew')
 
-        self.reset_button = ctk.CTkButton(self, text="Reset Graph", command=self.reset_graph)
+        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", command=self.reset_graph)
         self.reset_button.grid(in_=self.left_frame, row=7, column=0, pady=10, padx=10, sticky='ew')
 
         self.random_graph_button = ctk.CTkButton(self, text="Generate Simple Graph", command=lambda: self.generate_random_graph("simple"))
@@ -120,19 +128,22 @@ class GraphApp(ctk.CTk):
         self.random_graph_button = ctk.CTkButton(self, text="Generate Complex Graph", command=lambda: self.generate_random_graph("complex"))
         self.random_graph_button.grid(in_=self.left_frame, row=5, column=0, pady=10, padx=10, sticky='ew')
 
+        self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node)
+        self.delete_node_button.grid(row=6, column=1, pady=10, padx=10, sticky='ew')
+
         # Text widget to display the L table and other information
         self.info_text_widget = ctk.CTkTextbox(self, height=600, width=300)
-        self.info_text_widget.grid(in_=self.right_frame, row=1, column=0)
+        self.info_text_widget.grid(in_=self.right_frame, row=1, column=0, columnspan = 2, pady=10, padx=10, sticky='ew')
 
 
         # "Next Step" button for proceeding through Prim's algorithm
         self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step)
-        self.next_step_button.grid(in_=self.right_frame, row = 2, pady=20)
+        self.next_step_button.grid(in_=self.right_frame, row=3, pady=20, columnspan = 2)
         self.next_step_button.configure(state='disabled')  # Disabled by default, enabled when Prim's starts
 
         # MST toggle button
         self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view)
-        self.toggle_mst_button.grid(row=3, pady=20)
+        self.toggle_mst_button.grid(row=4, pady=10, columnspan = 2)
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
@@ -158,16 +169,28 @@ class GraphApp(ctk.CTk):
             self.rowconfigure(i, weight=1)
 
 
+    # Generic method to reset the dropdown menus and weight entry field to default values
+    def default_dropdown_labels(self):
+        self.start_vertex_var.set("Source")  # Default values for dropdowns
+        self.start_node_var.set("")
+        self.end_node_var.set("")
+        self.weight_var.set("")
+        self.delete_node_var.set("")
+        self.finalize_button.configure(text="Run Prims")  # Reset the button text
+
+
     # Method to show the placeholder text
     def show_placeholder_text(self):
         if not self.nodes and not self.edges:  # If there are no nodes or edges
             self.canvas.itemconfig(self.placeholder_text_id, state="normal")
     
+
     # Method to hide the placeholder text
     def hide_placeholder_text(self):
         self.canvas.itemconfig(self.placeholder_text_id, state="hidden")
     
 
+    # Generates a unique identifier for each node
     def generate_node_identifier(self):
         # Generates a unique identifier for each node
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -178,6 +201,7 @@ class GraphApp(ctk.CTk):
             return self.generate_node_identifier(quotient - 1) + alphabet[remainder]
 
 
+    # For updating all drop down menus
     def update_node_options(self):
         # Update the options in the dropdown menus for start nodes
         start_menu = self.start_node_menu["menu"]
@@ -199,8 +223,15 @@ class GraphApp(ctk.CTk):
         start_vertex_menu.delete(0, "end")
         for node in self.nodes:
             start_vertex_menu.add_command(label=node.identifier, command=tk._setit(self.start_vertex_var, node.identifier))
+        
+        # Update the options in the dropdown menu for node deletion
+        delete_node_menu = self.delete_node_menu["menu"]
+        delete_node_menu.delete(0, "end")
+        for node in self.nodes:
+            delete_node_menu.add_command(label=node.identifier, command=tk._setit(self.delete_node_var, node.identifier))
 
 
+    # Handles cases where user tries to manually create an edge using drop down menus
     def manual_create_edge(self):
         try:
             start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
@@ -225,17 +256,34 @@ class GraphApp(ctk.CTk):
             print(f"Creating edge: {start_node.identifier} -> {end_node.identifier}, Weight: {weight}")
             edge = Edge(start_node, end_node, weight)
             
-
             self.create_edge(edge)
+
+            # Reset colors of nodes and edges
+            for node in self.nodes:
+                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
+            for edge in self.edges:
+                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
+            
+            # Clears the info text widget 
+            self.info_text_widget.delete("1.0", tk.END) 
+
+            self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
+
+            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
+
+            self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
+            
         except ValueError as e:
             print(f"Error creating edge: {e}")
             self.status_label.configure(text=f"Error: {e}")
 
 
+    # Handles all cases where user clicks on the canvas
     def left_click_handler(self, event):
-        x, y = event.x, event.y
+        x, y = event.x, max(event.y, self.top_margin)
         clicked_node = self.find_node(x, y)
         self.hide_placeholder_text()   # Hide the placeholder text
+        self.reset_button.configure(state='normal') # Enable "Reset Graph" button when canvas is clicked and node is added
         
         if clicked_node:
             # If a node is clicked, initiate the drag process
@@ -257,6 +305,8 @@ class GraphApp(ctk.CTk):
             self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
 
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
+
+            self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             
             # There might be a better way of doing this but this works for now
             for edge in self.edges:     # If canvas is clicked when only showing MST edges, show all edges
@@ -275,8 +325,8 @@ class GraphApp(ctk.CTk):
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue", outline = "black")
-            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
+            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
+            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
             self.nodes.append(new_node)
             self.node_counter += 1
             self.update_node_options()  # Update dropdown menus when a new node is added
@@ -287,7 +337,7 @@ class GraphApp(ctk.CTk):
         if self.selected_node:
             # New x, y coordinates after the drag
             new_x = min(max(event.x, 15), self.canvas.winfo_width() - 15)
-            new_y = min(max(event.y, 15), self.canvas.winfo_height() - 15)
+            new_y = min(max(event.y, self.top_margin), self.canvas.winfo_height() - 15)
         
             # Calculate the deltas
             dx = new_x - self.selected_node.x
@@ -383,11 +433,11 @@ class GraphApp(ctk.CTk):
         # Create random nodes
         for _ in range(num_nodes):
             x = random.randint(15, canvas_width - 15)
-            y = random.randint(15, canvas_height - 15)
+            y = random.randint(self.top_margin, canvas_height - 15)
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="blue", outline = "black")
-            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 12))
+            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
+            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
             self.nodes.append(new_node)
             self.node_counter += 1
 
@@ -419,6 +469,8 @@ class GraphApp(ctk.CTk):
                 created_edges.add((start_node.identifier, end_node.identifier))
 
         self.status_label.configure(text="Generated random graph")
+        
+        self.reset_button.configure(state='normal') # Enable "Reset Graph" button when random graph is generated
 
 
     # Resets the graph for blank canvas
@@ -434,7 +486,7 @@ class GraphApp(ctk.CTk):
         self.node_counter = 0
         self.update_node_options()
 
-        # Reset UI components 
+        # Reset notificiation label
         self.status_label.configure(text="Graph has been reset")
 
         # Clear the info text widget 
@@ -445,6 +497,72 @@ class GraphApp(ctk.CTk):
 
         # Disables the toggle button when graph is reset
         self.toggle_mst_button.configure(state='disabled', text='Show MST only')  
+
+        # Reset the dropdown menus and weight entry field
+        self.default_dropdown_labels()
+
+        # Clear the dropdown menus
+        self.start_node_menu["menu"].delete(0, "end")
+        self.end_node_menu["menu"].delete(0, "end")
+        self.start_vertex_menu["menu"].delete(0, "end")
+        self.delete_node_menu["menu"].delete(0, "end")
+
+        # Add placeholder instruction
+        self.start_node_menu["menu"].add_command(label="No nodes available")
+        self.end_node_menu["menu"].add_command(label="No nodes available")
+        self.start_vertex_menu["menu"].add_command(label="No nodes available")
+        self.delete_node_menu["menu"].add_command(label="No nodes available")
+
+        # Disable "Reset Graph" button
+        self.reset_button.configure(state='disabled')
+
+
+    # Deletes a node and its edges
+    def delete_node(self):
+        node_identifier = self.delete_node_var.get()
+        node_to_delete = next((node for node in self.nodes if node.identifier == node_identifier), None)
+    
+        if node_to_delete:
+            # Remove the node visually
+            self.canvas.delete(node_to_delete.id)
+            self.canvas.delete(node_to_delete.text_id)
+        
+            # Remove the node from internal list
+            self.nodes.remove(node_to_delete)
+
+            # Remove edges connected to this node
+            edges_to_remove = [edge for edge in self.edges if edge.start_node == node_to_delete or edge.end_node == node_to_delete]
+            for edge in edges_to_remove:
+                self.canvas.delete(edge.line_id)
+                self.canvas.delete(edge.text_id)
+                self.canvas.delete(edge.midpoint_id)
+                self.edges.remove(edge)
+
+            # Update node identifiers and dropdown menus if necessary
+            # This depends on your logic for assigning and updating identifiers
+            # For now, let's just update the dropdown menus
+            self.update_node_options()
+
+            self.status_label.configure(text=f"Node {node_identifier} and its edges have been deleted")
+
+            # Reset colors of nodes and edges
+            for node in self.nodes:
+                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
+            for edge in self.edges:
+                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
+            
+            # Clears the info text widget 
+            self.info_text_widget.delete("1.0", tk.END) 
+
+            self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
+
+            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
+
+            self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
+
+            # If no nodes are left, show placeholder text
+            if not self.nodes:
+                self.show_placeholder_text()
 
 
     ##########################################
@@ -501,14 +619,14 @@ class GraphApp(ctk.CTk):
         self.update_info_text(f"Initial L table for vertex {u}: {L}\n\n")
         yield
 
+        total_weight = 0
+
         while Tv != V:
             # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
             w = min((v for v in (V - Tv)), key=lambda v: L[v])                
             
-            
-            self.update_info_text(f"Choosing next vertex {w} with the smallest L value.\n\n")
+            self.update_info_text(f"Choosing next vertex with smallest L value: {w}\n\n")
 
-        
             # Find the associated edge e from TV
             e = None
             min_weight = float('inf')
@@ -522,7 +640,8 @@ class GraphApp(ctk.CTk):
 
             # Add the edge e to TE
             if e != None:
-                Te.add(e)   
+                Te.add(e)
+                total_weight += min_weight   
                 # Marks edge as part of MST for toggling button
                 for edge in self.edges:
                     if (edge.start_node.identifier, edge.end_node.identifier) == e or \
@@ -531,6 +650,7 @@ class GraphApp(ctk.CTk):
             # Update TV
             Tv.add(w)
 
+            self.update_info_text(f"Added edge {e} to the minimum spanning tree.\n")
             yield e, w  # Pause the algorithm and return the added edge
 
             print(f"\nAdded edge {e} to the minimum spanning tree.")
@@ -552,6 +672,8 @@ class GraphApp(ctk.CTk):
             self.update_info_text(f"Current visited vertices: {Tv}\n\n")
             self.update_info_text(f"Updated minimum spanning tree edges: {Te}\n\n")
             yield
+        
+        self.update_info_text(f"-----Your final minimum spanning tree is----- \n\n {Te}\n\n The total weight of your MST is: {total_weight}\n\n---------------------------------------------")
         return Te
     
 
@@ -611,8 +733,8 @@ class GraphApp(ctk.CTk):
             if not self.is_graph_connected(V, E):   # Check if the graph is connected
                 raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
 
-            if not self.start_vertex_var.get():     # Check if a starting vertex is selected
-                raise ValueError("Select a starting vertex.")
+            if not self.start_vertex_var.get() or self.start_vertex_var.get() == "Source":     # Check if a starting vertex is selected
+                raise ValueError("Select a source node to begin Prim's algorithm on your graph.")
             
             # Initialize Prim's algorithm
             self.prim_generator = self.prim_minimum_spanning_tree((V, E, W))
@@ -656,6 +778,7 @@ class GraphApp(ctk.CTk):
             # Proceed to the next step in the generator
             result = next(self.prim_generator)
             self.status_label.configure(text="Running Prim's algorithm...")
+            self.finalize_button.configure(text="Click to start again")
         
             if result is not None:
                 edge_added, node_visited = result
@@ -674,8 +797,8 @@ class GraphApp(ctk.CTk):
             execution_time = self.end_time - self.start_time
             self.next_step_button.configure(state='disabled')  # Disable next step button since prim's is finished
             self.toggle_mst_button.configure(state='normal')  # Enable toggle button when algorithm finishes
-            self.update_info_text(f"Prim's algorithm completed in {execution_time:.2f} seconds.\n")
-            self.status_label.configure(text="Prim's algorithm completed")
+            self.update_info_text(f"\nCompleted in {execution_time:.2f} seconds.\n\n")
+            self.status_label.configure(text="Prim's algorithm completed, your minimum spanning tree has been highlighted.")
 
 
     # For toggling between showing the full graph and the MST
