@@ -22,6 +22,8 @@ class Edge:
         self.line_id = None  # To store the ID of the line on the canvas
         self.text_id = None  # To store the ID of the text label for the weight
         self.midpoint_id = None  # For the midpoint oval
+        self.is_mst_edge = False  # Attribute to mark if the edge is part of the MST for toggling button
+
 
 class GraphApp(ctk.CTk):
     def __init__(self):
@@ -127,6 +129,11 @@ class GraphApp(ctk.CTk):
         self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step)
         self.next_step_button.grid(in_=self.right_frame, row = 2, pady=20)
         self.next_step_button.configure(state='disabled')  # Disabled by default, enabled when Prim's starts
+
+        # MST toggle button
+        self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view)
+        self.toggle_mst_button.grid(row=3, pady=20)
+        self.toggle_mst_button.configure(state='disabled')  # Start as disabled
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
@@ -248,7 +255,23 @@ class GraphApp(ctk.CTk):
             self.info_text_widget.delete("1.0", tk.END) 
 
             self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
+
+            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
             
+            # There might be a better way of doing this but this works for now
+            for edge in self.edges:     # If canvas is clicked when only showing MST edges, show all edges
+                if not edge.is_mst_edge:
+                    # Show the edge
+                    current_state = self.canvas.itemcget(edge.line_id, 'state')
+                    reset_state = 'normal' if current_state == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.line_id, state=reset_state)
+                    self.canvas.itemconfigure(edge.midpoint_id, state=reset_state)
+
+                    # Show the weight label 
+                    current_state_text = self.canvas.itemcget(edge.text_id, 'state')
+                    reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
+
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
@@ -257,41 +280,6 @@ class GraphApp(ctk.CTk):
             self.nodes.append(new_node)
             self.node_counter += 1
             self.update_node_options()  # Update dropdown menus when a new node is added
-
-
-    def edge_drag_handler(self, event):
-        x, y = event.x, event.y
-
-        if hasattr(self, 'selected_edge') and self.selected_edge:
-            # If an edge is being created or connected, update its end position
-            self.canvas.delete(self.selected_edge.line_id)  # Delete the previous line
-            self.selected_edge.end_node = Node(x, y)
-            self.selected_edge.line_id = self.canvas.create_line(
-                self.selected_edge.start_node.x, self.selected_edge.start_node.y,
-                x, y, width=2, fill="black"  # Set the color to black
-            )
-
-
-    def edge_release_handler(self, event):
-        x, y = event.x, event.y
-        released_node = self.find_node(x, y)
-
-        if self.selected_node and released_node and self.selected_node != released_node:
-            if hasattr(self, 'selected_edge') and self.selected_edge:
-                # If released on an existing node, create an edge
-                self.selected_edge.end_node = released_node
-                self.create_edge(self.selected_edge)
-                self.status_label.configure(text="Graph Drawing Mode")
-                self.canvas.delete(self.selected_edge.line_id)
-                self.canvas.delete(self.selected_edge.midpoint_id)  
-            else:
-                # If released on an empty area, delete the temporary edge
-                if hasattr(self, 'selected_edge') and self.selected_edge:
-                    self.canvas.delete(self.selected_edge.line_id)
-
-        # Reset selected node and drag start position
-        self.selected_node = None
-        self.drag_start_pos = None
 
 
     # Handles scenarios where user drags nodes around
@@ -453,7 +441,10 @@ class GraphApp(ctk.CTk):
         self.info_text_widget.delete("1.0", tk.END) 
 
         # Show the placeholder text
-        self.show_placeholder_text()  
+        self.show_placeholder_text()
+
+        # Disables the toggle button when graph is reset
+        self.toggle_mst_button.configure(state='disabled', text='Show MST only')  
 
 
     ##########################################
@@ -531,8 +522,12 @@ class GraphApp(ctk.CTk):
 
             # Add the edge e to TE
             if e != None:
-                Te.add(e)
-
+                Te.add(e)   
+                # Marks edge as part of MST for toggling button
+                for edge in self.edges:
+                    if (edge.start_node.identifier, edge.end_node.identifier) == e or \
+                       (edge.end_node.identifier, edge.start_node.identifier) == e:
+                        edge.is_mst_edge = True
             # Update TV
             Tv.add(w)
 
@@ -660,8 +655,30 @@ class GraphApp(ctk.CTk):
             self.end_time = time.time()
             execution_time = self.end_time - self.start_time
             self.next_step_button.configure(state='disabled')  # Disable next step button since prim's is finished
+            self.toggle_mst_button.configure(state='normal')  # Enable toggle button when algorithm finishes
             self.update_info_text(f"Prim's algorithm completed in {execution_time:.2f} seconds.\n")
             self.status_label.configure(text="Prim's algorithm completed")
+
+
+    # For toggling between showing the full graph and the MST
+    def toggle_mst_view(self):
+        for edge in self.edges:
+            if not edge.is_mst_edge:
+                # Hide or show the edge
+                current_state = self.canvas.itemcget(edge.line_id, 'state')
+                new_state = 'hidden' if current_state == 'normal' else 'normal'
+                self.canvas.itemconfigure(edge.line_id, state=new_state)
+                self.canvas.itemconfigure(edge.midpoint_id, state=new_state)
+
+                # Hide or show the weight label 
+                current_state_text = self.canvas.itemcget(edge.text_id, 'state')
+                new_state_text = 'hidden' if current_state_text == 'normal' else 'normal'
+                self.canvas.itemconfigure(edge.text_id, state=new_state_text)
+            
+        # Update the button text based on the current state
+        current_text = self.toggle_mst_button.cget('text')
+        new_text = 'Show full graph' if current_text == 'Show MST only' else 'Show MST only'
+        self.toggle_mst_button.configure(text=new_text)
 
 
     def update_info_text(self, message):
