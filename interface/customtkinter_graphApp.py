@@ -247,7 +247,7 @@ class GraphApp(ctk.CTk):
 
             # Reset colors of nodes and edges
             for node in self.nodes:
-                self.canvas.itemconfig(node.id, fill="blue")  # Reset node color to blue
+                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
             for edge in self.edges:
                 self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
             
@@ -565,10 +565,12 @@ class GraphApp(ctk.CTk):
                 break  # Once the edge is found and highlighted, exit the loop
 
 
-    def highlight_node(self, node_identifier):
+    def highlight_node(self, node_identifier):    
         # Find the node by its identifier and update its color to indicate it's been visited
         for node in self.nodes:
-            if node.identifier == node_identifier:
+            if self.start_vertex_var.get() == node.identifier:
+                self.canvas.itemconfig(node.id, fill="orange", outline = "green")  # Outline starting node green to distinguish
+            elif node.identifier == node_identifier:
                 self.canvas.itemconfig(node.id, fill="orange", outline = "black")  # Colour visited node orange
                 break  # Break out of the loop once the node is found and highlighted
 
@@ -577,7 +579,7 @@ class GraphApp(ctk.CTk):
         try:
             self.start_time = time.time()  # Record start time
             if len(self.nodes) == 0:
-                raise ValueError("No nodes in the graph.")
+                raise ValueError("Please add nodes and edges to the canvas.")
             
             # Reset colors of nodes and edges
             for node in self.nodes:
@@ -585,8 +587,24 @@ class GraphApp(ctk.CTk):
             for edge in self.edges:
                 self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
             
+            # There might be a better way of doing this but this works for now
+            for edge in self.edges:     # If canvas is clicked when only showing MST edges, show all edges
+                if not edge.is_mst_edge:
+                    # Show the edge
+                    current_state = self.canvas.itemcget(edge.line_id, 'state')
+                    reset_state = 'normal' if current_state == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.line_id, state=reset_state)
+                    self.canvas.itemconfigure(edge.midpoint_id, state=reset_state)
+
+                    # Show the weight label 
+                    current_state_text = self.canvas.itemcget(edge.text_id, 'state')
+                    reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
+            
             # Clears the info text widget 
-            self.info_text_widget.delete("1.0", tk.END)  
+            self.info_text_widget.delete("1.0", tk.END)
+
+            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if Run Prims is clicked 
 
             V, E, W = self.extract_graph_data()
 
