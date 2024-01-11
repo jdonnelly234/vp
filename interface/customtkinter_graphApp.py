@@ -703,6 +703,9 @@ class GraphApp(ctk.CTk):
             if len(self.nodes) == 0:
                 raise ValueError("Please add nodes and edges to the canvas.")
             
+            if not self.is_graph_connected(V, E):   # Check if the graph is connected
+                raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
+            
             # Reset colors of nodes and edges
             for node in self.nodes:
                 self.canvas.itemconfig(node.id, fill="blue")  # Reset node color to blue
@@ -729,9 +732,6 @@ class GraphApp(ctk.CTk):
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if Run Prims is clicked 
 
             V, E, W = self.extract_graph_data()
-
-            if not self.is_graph_connected(V, E):   # Check if the graph is connected
-                raise ValueError("Graph is disconnected. Prim's algorithm requires a connected graph.")
 
             if not self.start_vertex_var.get() or self.start_vertex_var.get() == "Source":     # Check if a starting vertex is selected
                 raise ValueError("Select a source node to begin Prim's algorithm on your graph.")
