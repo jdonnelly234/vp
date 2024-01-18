@@ -1,9 +1,10 @@
 import customtkinter as ctk
 from customtkinter import E, END, N, NO, S, W, X, Y
 import tkinter as tk
-from tkinter import OptionMenu, StringVar, Entry, messagebox
+from tkinter import OptionMenu, StringVar, Entry, messagebox, filedialog
 import random
 import time
+import json
 
 # For node objects
 class Node:
@@ -159,6 +160,10 @@ class GraphApp(ctk.CTk):
         self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view)
         self.toggle_mst_button.grid(row=4, pady=10, columnspan = 2)
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
+
+        # Import graph button
+        self.import_graph_button = ctk.CTkButton(self, text="Import Graph", command=self.import_graph)
+        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='ew')
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
@@ -351,13 +356,18 @@ class GraphApp(ctk.CTk):
 
             # If no node is clicked, create a new node
             node_identifier = self.generate_node_identifier()
-            new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
-            new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
-            self.nodes.append(new_node)
-            self.node_counter += 1
-            self.update_node_options()  # Update dropdown menus when a new node is added
+            self.create_node(x, y, node_identifier)
 
+
+    # For creating a new node
+    def create_node(self, x, y, identifier):
+        new_node = Node(x, y, identifier)
+        new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
+        new_node.text_id = self.canvas.create_text(x, y, text=identifier, font=("Arial", 14))
+        self.nodes.append(new_node)
+        self.node_counter += 1
+        self.update_node_options()  # Update dropdown menus when a new node is added
+    
 
     # Deletes a node and its edges
     def delete_node(self):
@@ -546,6 +556,7 @@ class GraphApp(ctk.CTk):
             num_nodes = random.randint(3, 5)
         elif identifier == "complex":
             num_nodes = random.randint(7, 10)
+        
 
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
@@ -641,11 +652,39 @@ class GraphApp(ctk.CTk):
         self.reset_button.configure(state='disabled')
 
 
+    # For reset graph confirmation pop up
     def confirm_reset(self):
         # Confirmation dialog
         response = messagebox.askyesno("Reset Graph", "Are you sure you want to reset the graph?")
         if response:
             self.reset_graph()
+
+
+    # For importing a graph from a JSON file, note canvas width = 624 and height=768
+    def import_graph(self):
+        filepath = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if not filepath:
+            return
+
+        with open(filepath, 'r') as file:
+            data = json.load(file)
+
+        self.reset_graph()  
+
+        # Create nodes
+        for node_data in data["nodes"]:
+            self.create_node(node_data["x"], node_data["y"], node_data["id"])
+
+        # Create edges
+        for edge_data in data["edges"]:
+            start_node = next(node for node in self.nodes if node.identifier == edge_data["start"])
+            end_node = next(node for node in self.nodes if node.identifier == edge_data["end"])
+            self.create_edge(Edge(start_node, end_node, edge_data["weight"]))
+        
+        self.status_label.configure(text="Graph has been successfully imported")
+
+        # Enable "Reset Graph" button
+        self.reset_button.configure(state='normal')
 
 
 
