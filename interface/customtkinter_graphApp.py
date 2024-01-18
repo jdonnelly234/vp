@@ -1,7 +1,7 @@
 import customtkinter as ctk
-from customtkinter import E, END, N, NO, S, W, X, Y
+from customtkinter import E, END, N, NO, S, W, X, Y, CTkInputDialog
 import tkinter as tk
-from tkinter import OptionMenu, StringVar, Entry, messagebox, filedialog
+from tkinter import OptionMenu, StringVar, Entry, messagebox, filedialog, simpledialog
 import random
 import time
 import json
@@ -31,7 +31,7 @@ class GraphApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Visualising Prim's")
-        
+
         # Set the window size
         window_width = 1200
         window_height = 800
@@ -55,9 +55,13 @@ class GraphApp(ctk.CTk):
         # Frames for different sections
         self.left_frame = ctk.CTkFrame(self, width=200)
         self.left_frame.grid(row=0, column=0, sticky='ns', rowspan=14)
-        # Title for the left frame
-        self.left_frame_title = ctk.CTkLabel(self.left_frame, text="Node and Edge Controls", font=("Arial", 14, "bold"))
-        self.left_frame_title.grid(row=0, column=0, pady=10, padx=20, sticky='ew')
+
+        # Title for the upper left 
+        self.upper_left_frame_title = ctk.CTkLabel(self.left_frame, text="Create an edge", font=("Calibri", 20, "bold"))
+        self.upper_left_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='ew')
+
+        self.middle_left_frame_title = ctk.CTkLabel(self.left_frame, text="Delete a node or edge", font=("Calibri", 20, "bold"))
+        self.middle_left_frame_title.grid(row=5, column=0, pady=20, padx=10, sticky='ew')
 
         self.canvas_frame = ctk.CTkFrame(self, width=624, height=768)
         self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)
@@ -91,20 +95,20 @@ class GraphApp(ctk.CTk):
         
         # Dropdown menus for start/end node
         self.start_node_menu = OptionMenu(self, self.start_node_var, "Add nodes to see them here")
-        self.start_node_menu.grid(in_=self.left_frame, row=1, column=1, pady=10, padx=10, sticky='ew')
+        self.start_node_menu.grid(in_=self.left_frame, row=1, column=0, pady=5, padx=10, sticky='e')
 
         self.end_node_menu = OptionMenu(self, self.end_node_var, "Add nodes to see them here")
-        self.end_node_menu.grid(in_=self.left_frame, row=2, column=1, pady=10, padx=10, sticky='ew')
+        self.end_node_menu.grid(in_=self.left_frame, row=2, column=0, pady=5, padx=10, sticky='e')
 
         # Dropdown menu for node deletion
         self.delete_node_menu = OptionMenu(self.left_frame, self.delete_node_var, "Add nodes to see them here")
-        self.delete_node_menu.grid(row=5, column=0, pady=10, padx=10, sticky='ew')
+        self.delete_node_menu.grid(row=6, column=0, pady=10, padx=10, sticky='w')
 
         # Dropdown menu for edge deletion
         self.delete_edge_var = StringVar(self)
         self.delete_edge_var.set("   ") # Default value
         self.delete_edge_menu = OptionMenu(self.left_frame, self.delete_edge_var, "Add edges to see them here")
-        self.delete_edge_menu.grid(row=6, column=0, pady=10, padx=10, sticky='ew')
+        self.delete_edge_menu.grid(row=7, column=0, pady=10, padx=10, sticky='w')
 
         # Dropdown menu for source vertex
         self.start_vertex_menu = OptionMenu(self.right_frame, self.start_vertex_var, "Add nodes to see them here")
@@ -112,18 +116,18 @@ class GraphApp(ctk.CTk):
         self.start_vertex_var.set("Source")  # Default value
 
         # Weight entry field
-        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var)
-        self.weight_entry.grid(in_=self.left_frame, row=3, column=1, pady=10, padx=10, sticky='ew')
+        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var, width=50)
+        self.weight_entry.grid(in_=self.left_frame, row=3, column=0, pady=10, padx=10, sticky='e')
 
         # Labels for the dropdown menus and weight input
         self.start_node_label = ctk.CTkLabel(self, text="Start Node")
-        self.start_node_label.grid(in_=self.left_frame, row=1, column=0, sticky='n')
+        self.start_node_label.grid(in_=self.left_frame, row=1, column=0, sticky='w', padx=10, pady=10)
 
         self.end_node_label = ctk.CTkLabel(self, text="End Node")
-        self.end_node_label.grid(in_=self.left_frame, row=2, column=0, sticky='n')
+        self.end_node_label.grid(in_=self.left_frame, row=2, column=0, sticky='w', padx=10)
 
-        self.weight_label = ctk.CTkLabel(self, text="Weight")
-        self.weight_label.grid(in_=self.left_frame, row=3, column=0, sticky='n')
+        self.weight_label = ctk.CTkLabel(self, text="Weight", fg_color="#302c2c")
+        self.weight_label.grid(in_=self.left_frame, row=3, column=0, sticky='w', padx=10)
         
         # Buttons
         self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge)
@@ -132,20 +136,17 @@ class GraphApp(ctk.CTk):
         self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst)
         self.finalize_button.grid(in_=self.right_frame, row=0, column=0, pady=10, padx=10, sticky='ew')
 
-        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", command=self.confirm_reset)
-        self.reset_button.grid(in_=self.left_frame, row=9, column=0, pady=10, padx=10, sticky='ew')
+        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset)
+        self.reset_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='ew')
 
-        self.random_graph_button = ctk.CTkButton(self, text="Generate Simple Graph", command=lambda: self.generate_random_graph("simple"))
-        self.random_graph_button.grid(in_=self.left_frame, row=7, column=0, pady=10, padx=10, sticky='ew')
-
-        self.random_graph_button = ctk.CTkButton(self, text="Generate Complex Graph", command=lambda: self.generate_random_graph("complex"))
+        self.random_graph_button = ctk.CTkButton(self, text="Generate a graph", command=self.generate_graph_dialog)
         self.random_graph_button.grid(in_=self.left_frame, row=8, column=0, pady=10, padx=10, sticky='ew')
 
-        self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node)
-        self.delete_node_button.grid(row=5, column=1, pady=10, padx=10, sticky='ew')
+        self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node, width=20)
+        self.delete_node_button.grid(row=6, column=0, pady=10, padx=10, sticky='e')
 
-        self.delete_edge_button = ctk.CTkButton(self.left_frame, text="Delete Edge", command=self.delete_edge)
-        self.delete_edge_button.grid(row=6, column=1, pady=10, padx=10, sticky='ew')
+        self.delete_edge_button = ctk.CTkButton(self.left_frame, text="Delete Edge", command=self.delete_edge, width = 20)
+        self.delete_edge_button.grid(row=7, column=0, pady=10, padx=10, sticky='e')
 
         # Text widget to display the L table and other information
         self.info_text_widget = ctk.CTkTextbox(self, height=600, width=300)
@@ -162,8 +163,8 @@ class GraphApp(ctk.CTk):
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
 
         # Import graph button
-        self.import_graph_button = ctk.CTkButton(self, text="Import Graph", command=self.import_graph)
-        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='ew')
+        self.import_graph_button = ctk.CTkButton(self, text="Import Graph", width=20, command=self.import_graph)
+        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=150, padx=10, sticky='ew')
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
@@ -548,15 +549,25 @@ class GraphApp(ctk.CTk):
         return None
     
 
+
+    def generate_graph_dialog(self):
+        # Ask for the number of nodes
+        num_nodes = simpledialog.askinteger("Graph Parameters", "Enter the number of nodes:", parent=self)
+        if num_nodes is None:  # If the user closes the dialog, do nothing
+            return
+
+        # Ask for the complexity of the graph
+        identifier = simpledialog.askstring("Graph Parameters", "Enter graph complexity (simple/complex):", parent=self)
+        if identifier is None or identifier.lower() not in ["simple", "complex"]:  # Validate complexity input
+            messagebox.showerror("Input Error", "Please enter 'simple' or 'complex' for graph complexity.")
+            return
+
+        self.generate_random_graph(num_nodes, identifier)
+    
+
     # Generates a random graph on the canvas to save user time
-    def generate_random_graph(self, identifier):
+    def generate_random_graph(self, num_nodes, identifier):
         self.reset_graph()  # Clear the existing graph
-        
-        if identifier == "simple":
-            num_nodes = random.randint(3, 5)
-        elif identifier == "complex":
-            num_nodes = random.randint(7, 10)
-        
 
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
@@ -567,7 +578,7 @@ class GraphApp(ctk.CTk):
             y = random.randint(self.top_margin, canvas_height - 15)
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
+            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline="black")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -585,23 +596,26 @@ class GraphApp(ctk.CTk):
         # Set to store created edges (start_node, end_node)
         created_edges = set((self.nodes[i-1].identifier, self.nodes[i].identifier) for i in range(1, len(self.nodes)))
 
-        # Random number of additional edges
-        num_additional_edges = random.randint(0, num_nodes * (num_nodes - 1) // 2 - num_nodes + 1)
+        # Determine complexity parameters
+        complexity_factor = 1 if identifier == "simple" else 2  # Complex graphs have more edges
+        weight_range = (1, 5) if identifier == "simple" else (1, 15)  # Complex graphs have a wider range of weights
+
+        # Random number of additional edges based on complexity
+        num_additional_edges = random.randint(0, complexity_factor * num_nodes * (num_nodes - 1) // 2 - num_nodes + 1)
 
         while len(created_edges) < num_additional_edges + num_nodes - 1:
             start_node, end_node = random.sample(self.nodes, 2)  # Select two unique nodes
-            # Ensure uniqueness of edges
             if (start_node.identifier, end_node.identifier) not in created_edges and \
             (end_node.identifier, start_node.identifier) not in created_edges:
 
-                weight = random.randint(1, 10)  # Random weight
+                weight = random.randint(*weight_range)  # Random weight based on complexity
                 new_edge = Edge(start_node, end_node, weight)
                 self.create_edge(new_edge)
                 created_edges.add((start_node.identifier, end_node.identifier))
 
-        self.status_label.configure(text="Generated random graph")
-        
-        self.reset_button.configure(state='normal') # Enable "Reset Graph" button when random graph is generated
+        self.status_label.configure(text=f"Generated {identifier} graph")
+
+        self.reset_button.configure(state='normal')  # Enable "Reset Graph" button when random graph is generated
 
 
     # Resets the graph for blank canvas
@@ -917,7 +931,7 @@ class GraphApp(ctk.CTk):
                 if (v, u) in E or (u, v) in E:  # Checks if there is an edge between two vertices,
                     dfs(u)                      # if so, dfs recursively called
 
-        # Start depth-first seacrch from the first node in V
+        # Start depth-first search from the first node in V
         dfs(next(iter(V)))
 
         return visited == V #  Only returns true if list of visited vertices matches original list of vertices, this would mean graph is connected
