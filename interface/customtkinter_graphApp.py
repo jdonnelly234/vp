@@ -73,7 +73,7 @@ class GraphApp(ctk.CTk):
         self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8, columnspan=2)
 
         self.right_frame_title = ctk.CTkLabel(self.right_frame, text="Run Prim's algorithm", font=("Calibri", 20, "bold"))
-        self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='e', columnspan=2)
+        self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='e')
 
         self.status_frame = ctk.CTkFrame(self, width=200)
         self.status_frame.grid(row=0, column=0, pady=12, padx=50, columnspan=4, sticky='n')
@@ -557,23 +557,25 @@ class GraphApp(ctk.CTk):
 
 
     def generate_graph_dialog(self):
-        # Ask for the number of nodes
-        num_nodes = simpledialog.askinteger("Graph Parameters", "Enter the number of nodes:", parent=self)
-        if num_nodes is None:  # If the user closes the dialog, do nothing
-            return
-
+        
         # Ask for the complexity of the graph
         identifier = simpledialog.askstring("Graph Parameters", "Enter graph complexity (simple/complex):", parent=self)
         if identifier is None or identifier.lower() not in ["simple", "complex"]:  # Validate complexity input
             messagebox.showerror("Input Error", "Please enter 'simple' or 'complex' for graph complexity.")
             return
 
-        self.generate_random_graph(num_nodes, identifier)
+        self.generate_random_graph(identifier)
     
 
     # Generates a random graph on the canvas to save user time
-    def generate_random_graph(self, num_nodes, identifier):
+    # Generates a random graph on the canvas to save user time
+    def generate_random_graph(self, identifier):
         self.reset_graph()  # Clear the existing graph
+        
+        if identifier == "simple":
+            num_nodes = random.randint(3, 5)
+        elif identifier == "complex":
+            num_nodes = random.randint(7, 10)
 
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
@@ -584,7 +586,7 @@ class GraphApp(ctk.CTk):
             y = random.randint(self.top_margin, canvas_height - 15)
             node_identifier = self.generate_node_identifier()
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline="black")
+            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -602,26 +604,24 @@ class GraphApp(ctk.CTk):
         # Set to store created edges (start_node, end_node)
         created_edges = set((self.nodes[i-1].identifier, self.nodes[i].identifier) for i in range(1, len(self.nodes)))
 
-        # Determine complexity parameters
-        complexity_factor = 1 if identifier == "simple" else 2  # Complex graphs have more edges
-        weight_range = (1, 5) if identifier == "simple" else (1, 15)  # Complex graphs have a wider range of weights
-
-        # Random number of additional edges based on complexity
-        num_additional_edges = random.randint(0, complexity_factor * num_nodes * (num_nodes - 1) // 2 - num_nodes + 1)
+        # Random number of additional edges
+        num_additional_edges = random.randint(0, num_nodes * (num_nodes - 1) // 2 - num_nodes + 1)
 
         while len(created_edges) < num_additional_edges + num_nodes - 1:
             start_node, end_node = random.sample(self.nodes, 2)  # Select two unique nodes
+            # Ensure uniqueness of edges
             if (start_node.identifier, end_node.identifier) not in created_edges and \
             (end_node.identifier, start_node.identifier) not in created_edges:
 
-                weight = random.randint(*weight_range)  # Random weight based on complexity
+                weight = random.randint(1, 10)  # Random weight
                 new_edge = Edge(start_node, end_node, weight)
                 self.create_edge(new_edge)
                 created_edges.add((start_node.identifier, end_node.identifier))
 
-        self.status_label.configure(text=f"Generated {identifier} graph")
+        self.status_label.configure(text="Generated random graph")
+        
+        self.reset_button.configure(state='normal') # Enable "Reset Graph" button when random graph is generated
 
-        self.reset_button.configure(state='normal')  # Enable "Reset Graph" button when random graph is generated
 
 
     # Resets the graph for blank canvas
@@ -645,9 +645,6 @@ class GraphApp(ctk.CTk):
         self.info_text_widget.delete("1.0", tk.END)
         self.info_text_widget.configure(state='disabled') 
 
-        # Show the placeholder text
-        self.show_placeholder_text()
-
         # Disables the toggle button when graph is reset
         self.toggle_mst_button.configure(state='disabled', text='Show MST only')  
 
@@ -670,6 +667,9 @@ class GraphApp(ctk.CTk):
 
         # Disable "Reset Graph" button
         self.reset_button.configure(state='disabled')
+
+        # Show the placeholder text
+        self.show_placeholder_text()
 
 
     # For reset graph confirmation pop up
