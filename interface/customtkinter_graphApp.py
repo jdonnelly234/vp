@@ -53,21 +53,27 @@ class GraphApp(ctk.CTk):
         self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
 
         # Frames for different sections
-        self.left_frame = ctk.CTkFrame(self, width=200)
+        self.left_frame = ctk.CTkFrame(self, width=200, fg_color="#302c2c")
         self.left_frame.grid(row=0, column=0, sticky='ns', rowspan=14)
 
-        # Title for the upper left 
+        # Headings for UI sections 
         self.upper_left_frame_title = ctk.CTkLabel(self.left_frame, text="Create an edge", font=("Calibri", 20, "bold"))
-        self.upper_left_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='ew')
+        self.upper_left_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='w')
 
         self.middle_left_frame_title = ctk.CTkLabel(self.left_frame, text="Delete a node or edge", font=("Calibri", 20, "bold"))
-        self.middle_left_frame_title.grid(row=5, column=0, pady=20, padx=10, sticky='ew')
+        self.middle_left_frame_title.grid(row=5, column=0, pady=10, padx=10, sticky='w')
 
-        self.canvas_frame = ctk.CTkFrame(self, width=624, height=768)
+        self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="Other features", font=("Calibri", 20, "bold"))
+        self.lower_left_frame_title.grid(row=8, column=0, pady=10, padx=10, sticky='w')
+
+        self.canvas_frame = ctk.CTkFrame(self, width=624, height=768, fg_color="#595656")
         self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)
 
-        self.right_frame = ctk.CTkFrame(self, width=200)
+        self.right_frame = ctk.CTkFrame(self, width=200, fg_color="#302c2c")
         self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8, columnspan=2)
+
+        self.right_frame_title = ctk.CTkLabel(self.right_frame, text="Run Prim's algorithm", font=("Calibri", 20, "bold"))
+        self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='e', columnspan=2)
 
         self.status_frame = ctk.CTkFrame(self, width=200)
         self.status_frame.grid(row=0, column=0, pady=12, padx=50, columnspan=4, sticky='n')
@@ -112,7 +118,7 @@ class GraphApp(ctk.CTk):
 
         # Dropdown menu for source vertex
         self.start_vertex_menu = OptionMenu(self.right_frame, self.start_vertex_var, "Add nodes to see them here")
-        self.start_vertex_menu.grid(row=0, column=1, pady=10, padx=(1,10), sticky='e')
+        self.start_vertex_menu.grid(row=1, column=1, pady=10, padx=(1,10), sticky='e')
         self.start_vertex_var.set("Source")  # Default value
 
         # Weight entry field
@@ -134,13 +140,13 @@ class GraphApp(ctk.CTk):
         self.create_edge_button.grid(in_=self.left_frame, row=4, column=0, pady=10, padx=10, sticky='ew')
 
         self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst)
-        self.finalize_button.grid(in_=self.right_frame, row=0, column=0, pady=10, padx=10, sticky='ew')
+        self.finalize_button.grid(in_=self.right_frame, row=1, column=0, pady=10, padx=10, sticky='ew')
 
         self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset)
         self.reset_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='ew')
 
         self.random_graph_button = ctk.CTkButton(self, text="Generate a graph", command=self.generate_graph_dialog)
-        self.random_graph_button.grid(in_=self.left_frame, row=8, column=0, pady=10, padx=10, sticky='ew')
+        self.random_graph_button.grid(in_=self.left_frame, row=9, column=0, pady=10, padx=10, sticky='ew')
 
         self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node, width=20)
         self.delete_node_button.grid(row=6, column=0, pady=10, padx=10, sticky='e')
@@ -149,22 +155,22 @@ class GraphApp(ctk.CTk):
         self.delete_edge_button.grid(row=7, column=0, pady=10, padx=10, sticky='e')
 
         # Text widget to display the L table and other information
-        self.info_text_widget = ctk.CTkTextbox(self, height=600, width=300)
-        self.info_text_widget.grid(in_=self.right_frame, row=1, column=0, columnspan = 2, pady=10, padx=10, sticky='ew')
+        self.info_text_widget = ctk.CTkTextbox(self, height=500, width=300)
+        self.info_text_widget.grid(in_=self.right_frame, row=2, column=0, columnspan = 2, pady=10, padx=10, sticky='ew')
 
         # Next Step button for proceeding through Prim's 
         self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step)
-        self.next_step_button.grid(in_=self.right_frame, row=3, pady=20, columnspan = 2)
+        self.next_step_button.grid(in_=self.right_frame, row=4, pady=20, columnspan = 2)
         self.next_step_button.configure(state='disabled')  # Disabled by default, enabled when Prim's starts
 
         # MST toggle button
         self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view)
-        self.toggle_mst_button.grid(row=4, pady=10, columnspan = 2)
+        self.toggle_mst_button.grid(row=5, pady=10, columnspan = 2)
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
 
         # Import graph button
         self.import_graph_button = ctk.CTkButton(self, text="Import Graph", width=20, command=self.import_graph)
-        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=150, padx=10, sticky='ew')
+        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='ew')
 
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
