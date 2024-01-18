@@ -655,36 +655,61 @@ class GraphApp(ctk.CTk):
     # For reset graph confirmation pop up
     def confirm_reset(self):
         # Confirmation dialog
-        response = messagebox.askyesno("Reset Graph", "Are you sure you want to reset the graph?")
+        self.grab_set()  # Direct all events to the main window
+        response = messagebox.askyesno("Reset Graph", "Are you sure you want to reset the graph?", parent=self)     # parent=self makes the messagebox appear in the center of the window
+        self.grab_release()  # Release the grab after the file dialog is closed
         if response:
             self.reset_graph()
 
 
-    # For importing a graph from a JSON file, note canvas width = 624 and height=768
+    # For importing a graph from a JSON file, note to self that canvas width = 624 and height=768
     def import_graph(self):
-        filepath = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
-        if not filepath:
-            return
+        try:
+            filepath = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")], parent=self)
+            if not filepath:
+                return
 
-        with open(filepath, 'r') as file:
-            data = json.load(file)
+            with open(filepath, 'r') as file:
+                data = json.load(file)
 
-        self.reset_graph()  
+            # Perform all validation before modifying the graph
+            for node_data in data["nodes"]:
+                if node_data["x"] > 624 or node_data["y"] > 768:
+                    raise ValueError(f"Node {node_data['id']} has invalid coordinates in the JSON file.")
+                if not node_data["id"].isalpha() or len(node_data["id"]) > 1:
+                    raise ValueError(f"Node identifier {node_data["id"]} must be a single letter.")
 
-        # Create nodes
-        for node_data in data["nodes"]:
-            self.create_node(node_data["x"], node_data["y"], node_data["id"])
+            for edge_data in data["edges"]:
+                if edge_data["start"] not in [node["id"] for node in data["nodes"]] or \
+                   edge_data["end"] not in [node["id"] for node in data["nodes"]]:
+                    raise ValueError("Invalid edge data in JSON file.")
 
-        # Create edges
-        for edge_data in data["edges"]:
-            start_node = next(node for node in self.nodes if node.identifier == edge_data["start"])
-            end_node = next(node for node in self.nodes if node.identifier == edge_data["end"])
-            self.create_edge(Edge(start_node, end_node, edge_data["weight"]))
+            # Reset graph after data has been validated
+            self.reset_graph()
+
+            # Create nodes
+            for node_data in data["nodes"]:
+                self.create_node(node_data["x"], node_data["y"], node_data["id"])
+
+            # Create edges
+            for edge_data in data["edges"]:
+                start_node = next(node for node in self.nodes if node.identifier == edge_data["start"])
+                end_node = next(node for node in self.nodes if node.identifier == edge_data["end"])
+                self.create_edge(Edge(start_node, end_node, edge_data["weight"]))
+
+            self.status_label.configure(text="Graph has been successfully imported")
+            self.reset_button.configure(state='normal')
+
+        except json.JSONDecodeError:
+            messagebox.showerror("Import Error", "Invalid JSON file format.", parent=self)
+        except FileNotFoundError:
+            messagebox.showerror("Import Error", "File not found.", parent=self)
+        except ValueError as e:
+            messagebox.showerror("Import Error", str(e), parent=self)
+        except Exception as e:
+            messagebox.showerror("Import Error", f"An error occurred: {e}", parent=self)
+
         
-        self.status_label.configure(text="Graph has been successfully imported")
-
-        # Enable "Reset Graph" button
-        self.reset_button.configure(state='normal')
 
 
 
