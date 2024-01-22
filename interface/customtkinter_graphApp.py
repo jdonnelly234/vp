@@ -53,7 +53,7 @@ class GraphApp(ctk.CTk):
         self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
 
         # Frames for different sections
-        self.left_frame = ctk.CTkFrame(self, width=200, fg_color="#302c2c")
+        self.left_frame = ctk.CTkFrame(self, width=200, fg_color="#2b2828", corner_radius=0)
         self.left_frame.grid(row=0, column=0, sticky='ns', rowspan=14)
 
         # Headings for UI sections 
@@ -66,14 +66,14 @@ class GraphApp(ctk.CTk):
         self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="Other features", font=("Calibri", 20, "bold"))
         self.lower_left_frame_title.grid(row=8, column=0, pady=10, padx=10, sticky='w')
 
-        self.canvas_frame = ctk.CTkFrame(self, width=624, height=768, fg_color="#595656")
+        self.canvas_frame = ctk.CTkFrame(self, width=624, height=768, fg_color="#2b2828", corner_radius=10, bg_color="#2b2828")
         self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)
 
-        self.right_frame = ctk.CTkFrame(self, width=200, fg_color="#302c2c")
+        self.right_frame = ctk.CTkFrame(self, width=200, fg_color="#2b2828", corner_radius=0)
         self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8, columnspan=2)
 
         self.right_frame_title = ctk.CTkLabel(self.right_frame, text="Run Prim's algorithm", font=("Calibri", 20, "bold"))
-        self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='e')
+        self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='ew', columnspan=2)
 
         self.status_frame = ctk.CTkFrame(self, width=200)
         self.status_frame.grid(row=0, column=0, pady=12, padx=50, columnspan=4, sticky='n')
@@ -89,7 +89,7 @@ class GraphApp(ctk.CTk):
         self.drag_start_pos = None
 
         # UI components
-        self.status_label = ctk.CTkLabel(self.status_frame, text="Graph Drawing Mode")
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Graph Drawing Mode", font=("Calibri", 12, "italic"))
         self.status_label.pack(pady=1, padx=1)  # Use pack to add padding inside the frame
 
         # Dropdown menus and weight input
@@ -841,7 +841,7 @@ class GraphApp(ctk.CTk):
             self.update_info_text(f"Updated minimum spanning tree edges: {Te}\n\n")
             yield
         
-        self.update_info_text(f"-----Your final minimum spanning tree is----- \n\n {Te}\n\n The total weight of your MST is: {total_weight}\n\n---------------------------------------------")
+        self.update_info_text(f"All vertices have been visited, therefore...\n\n-----Your final minimum spanning tree is----- \n\n {Te}\n\n The total weight of your MST is: {total_weight}\n\n---------------------------------------------")
         return Te
     
     # For highlighting MST edges
