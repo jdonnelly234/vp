@@ -7,18 +7,16 @@ from node import Node
 from edge import Edge
 from gui import GUI
 from utils import *
+from config import *
 
-# Visualising Prim's main class
+# Visualising Prim's main application class
 class VisualisingPrims(GUI):
     def __init__(self):
         super().__init__()
-
         self.nodes = []  # List to store nodes
         self.edges = []  # List to store edges
-
-        self.selected_node = None
-        self.drag_start_pos = None
-
+        self.selected_node = None   # For storing the node that is currently selected for drag_handler
+        self.drag_start_pos = None  # For storing the starting position of the drag for left_click_handler
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
         # Bind mouse events
@@ -26,71 +24,87 @@ class VisualisingPrims(GUI):
         self.canvas.bind("<B1-Motion>", self.drag_handler)
 
 
-    # Generic method to reset the dropdown menus and weight entry field to default values
-    def default_dropdown_labels(self):
-        self.start_vertex_var.set("Source")  # Default values for dropdowns
-        self.start_node_var.set("")
-        self.end_node_var.set("")
-        self.weight_var.set("")
-        self.delete_node_var.set("")
-        self.finalize_button.configure(text="Run Prims")  # Reset the button text
-
-
-    # Method to show the placeholder text
-    def show_placeholder_text(self):
-        if not self.nodes and not self.edges:  # If there are no nodes or edges
-            self.canvas.itemconfig(self.placeholder_text_id, state="normal")
+    # For creating a new node
+    def create_node(self, x, y, identifier):
+        new_node = Node(x, y, identifier)
+        new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black", width = 3)
+        new_node.text_id = self.canvas.create_text(x, y, text=identifier, font=("Arial", 14))
+        self.nodes.append(new_node)
+        self.node_counter += 1
+        self.update_node_options()  # Update dropdown menus when a new node is added
     
 
-    # Method to hide the placeholder text
-    def hide_placeholder_text(self):
-        self.canvas.itemconfig(self.placeholder_text_id, state="hidden")
+    # Deletes a node and its edges
+    def delete_node(self):
+        node_identifier = self.delete_node_var.get()
+        node_to_delete = next((node for node in self.nodes if node.identifier == node_identifier), None)
 
+        if node_identifier == "":
+            self.status_label.configure(text="Please select a node for deletion")
 
-
-    # For updating all node related things in drop down menus
-    def update_node_options(self):
-        # Update the options in the dropdown menus for start nodes
-        start_menu = self.start_node_menu["menu"]
-        start_menu.delete(0, "end")
-        for node in self.nodes:
-            print(f"Adding {node.identifier} to start node menu")
-            start_menu.add_command(label=node.identifier, command=tk._setit(self.start_node_var, node.identifier))
-            
-        # Update the options in the dropdown menus for end nodes
-        end_menu = self.end_node_menu["menu"]
-        end_menu.delete(0, "end")
-        for node in self.nodes:
-            print(f"Adding {node.identifier} to end node menu")
-            end_menu.add_command(label=node.identifier, command=tk._setit(self.end_node_var, node.identifier))
+        if node_to_delete:
+            # Remove the node visually
+            self.canvas.delete(node_to_delete.id)
+            self.canvas.delete(node_to_delete.text_id)
         
-        # Update the options in the dropdown menu for starting vertex
-        start_vertex_menu = self.start_vertex_menu["menu"]
-        start_vertex_menu.delete(0, "end")
+            # Remove the node from internal list
+            self.nodes.remove(node_to_delete)
+
+            # Remove edges connected to the node
+            edges_to_remove = [edge for edge in self.edges if edge.start_node == node_to_delete or edge.end_node == node_to_delete]
+            for edge in edges_to_remove:
+                self.canvas.delete(edge.line_id)
+                self.canvas.delete(edge.text_id)
+                self.canvas.delete(edge.midpoint_id)
+                self.edges.remove(edge)
+
+            self.update_node_options()
+            self.clear_info_text()
+            self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
+            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
+            self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
+            self.status_label.configure(text=f"Node {node_identifier} and its edges have been deleted")
+
+            # If no nodes are left, show placeholder text
+            if not self.nodes:
+                self.show_placeholder_text()
+
+
+    # For creating an edge between two nodes
+    def create_edge(self, edge):
+        # Calculate the midpoint for the weight label
+        mid_x = (edge.start_node.x + edge.end_node.x) / 2
+        mid_y = (edge.start_node.y + edge.end_node.y) / 2
+
+        # Create the edge and add it to the list
+        edge.line_id = self.canvas.create_line(
+            edge.start_node.x, edge.start_node.y,
+            edge.end_node.x, edge.end_node.y, width=2, fill="black"
+        )
+
+        # Create an oval at the midpoint to serve as midpoint marker
+        edge.midpoint_id = self.canvas.create_oval(
+            mid_x - 8, mid_y - 8, mid_x + 8, mid_y + 8, fill="white", outline="black"
+        )
+
+        # Create the text for the weight
+        edge.text_id = self.canvas.create_text(mid_x, mid_y, text=str(edge.weight), font=("Arial", 12), fill="black")
+
+        self.edges.append(edge)
+
+        print(f"Edge created in canvas: {edge.start_node.identifier} -> {edge.end_node.identifier}, Weight: {edge.weight}")
+
+        # Ensure the text is above the oval
+        self.canvas.tag_raise(edge.text_id)
+
         for node in self.nodes:
-            start_vertex_menu.add_command(label=node.identifier, command=tk._setit(self.start_vertex_var, node.identifier))
-        
-        # Update the options in the dropdown menu for node deletion
-        delete_node_menu = self.delete_node_menu["menu"]
-        delete_node_menu.delete(0, "end")
-        for node in self.nodes:
-            delete_node_menu.add_command(label=node.identifier, command=tk._setit(self.delete_node_var, node.identifier))
+            self.canvas.tag_raise(node.id)
+            self.canvas.tag_raise(node.text_id)
+
+        self.update_edge_options()  # Update dropdown menu when a new edge is added
 
 
-    # For updating all edge related things in drop down menus
-    def update_edge_options(self):
-        # Update the options in the dropdown menu for edge deletion
-        delete_edge_menu = self.delete_edge_menu["menu"]
-        delete_edge_menu.delete(0, "end")
-        for edge in self.edges:
-            edge_identifier = f"{edge.start_node.identifier} - {edge.end_node.identifier}"
-            delete_edge_menu.add_command(label=edge_identifier, command=tk._setit(self.delete_edge_var, edge_identifier))
-
-        if not self.edges:  # Add placeholder text if no edges are left
-            delete_edge_menu.add_command(label="No edges available")
-
-
-    # Handles cases where user tries to manually create an edge using drop down menus
+    # For manual edge creation using drop down menus, weight field and "Create Edge" button
     def manual_create_edge(self):
         try:
             start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
@@ -116,122 +130,15 @@ class VisualisingPrims(GUI):
             edge = Edge(start_node, end_node, weight)
             
             self.create_edge(edge)
-
-            # Reset colors of nodes and edges
-            for node in self.nodes:
-                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
-            for edge in self.edges:
-                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
-            
-            # Clears the info text widget 
-            self.info_text_widget.configure(state='normal')
-            self.info_text_widget.delete("1.0", tk.END)
-            self.info_text_widget.configure(state='disabled') 
-
+            self.reset_node_and_edge_colors()  # Reset colors of nodes and edges
+            self.clear_info_text()  # Clear the info text widget
             self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
-
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
-
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             
         except ValueError as e:
             print(f"Error creating edge: {e}")
             self.status_label.configure(text=f"Error: {e}")
-
-
-    # For creating a new node
-    def create_node(self, x, y, identifier):
-        new_node = Node(x, y, identifier)
-        new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
-        new_node.text_id = self.canvas.create_text(x, y, text=identifier, font=("Arial", 14))
-        self.nodes.append(new_node)
-        self.node_counter += 1
-        self.update_node_options()  # Update dropdown menus when a new node is added
-    
-
-    # Deletes a node and its edges
-    def delete_node(self):
-        node_identifier = self.delete_node_var.get()
-        node_to_delete = next((node for node in self.nodes if node.identifier == node_identifier), None)
-
-        if node_identifier == "":
-            self.status_label.configure(text="Please select a node for deletion")
-
-        if node_to_delete:
-            # Remove the node visually
-            self.canvas.delete(node_to_delete.id)
-            self.canvas.delete(node_to_delete.text_id)
-        
-            # Remove the node from internal list
-            self.nodes.remove(node_to_delete)
-
-            # Remove edges connected to this node
-            edges_to_remove = [edge for edge in self.edges if edge.start_node == node_to_delete or edge.end_node == node_to_delete]
-            for edge in edges_to_remove:
-                self.canvas.delete(edge.line_id)
-                self.canvas.delete(edge.text_id)
-                self.canvas.delete(edge.midpoint_id)
-                self.edges.remove(edge)
-
-            # Update node identifiers and dropdown menus
-            self.update_node_options()
-
-            self.status_label.configure(text=f"Node {node_identifier} and its edges have been deleted")
-
-            # Reset colors of nodes and edges
-            for node in self.nodes:
-                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
-            for edge in self.edges:
-                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
-            
-            # Clears the info text widget 
-            self.info_text_widget.configure(state='normal')
-            self.info_text_widget.delete("1.0", tk.END)
-            self.info_text_widget.configure(state='disabled') 
-
-            self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
-
-            self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
-
-            self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
-
-            # If no nodes are left, show placeholder text
-            if not self.nodes:
-                self.show_placeholder_text()
-
-
-    # For creating an edge between two nodes
-    def create_edge(self, edge):
-        # Calculate the midpoint for the weight label
-        mid_x = (edge.start_node.x + edge.end_node.x) / 2
-        mid_y = (edge.start_node.y + edge.end_node.y) / 2
-
-        # Create the edge and add it to the list
-        edge.line_id = self.canvas.create_line(
-            edge.start_node.x, edge.start_node.y,
-            edge.end_node.x, edge.end_node.y, width=2, fill="black"
-        )
-
-        # Create an oval at the midpoint to serve as a more visible midpoint marker
-        edge.midpoint_id = self.canvas.create_oval(
-            mid_x - 8, mid_y - 8, mid_x + 8, mid_y + 8, fill="white", outline="black"
-        )
-
-        # Create the text for the weight
-        edge.text_id = self.canvas.create_text(mid_x, mid_y, text=str(edge.weight), font=("Arial", 12), fill="black")
-
-        self.edges.append(edge)
-
-        print(f"Edge created in canvas: {edge.start_node.identifier} -> {edge.end_node.identifier}, Weight: {edge.weight}")
-
-        # Ensure the text is above the oval
-        self.canvas.tag_raise(edge.text_id)
-
-        for node in self.nodes:
-            self.canvas.tag_raise(node.id)
-            self.canvas.tag_raise(node.text_id)
-
-        self.update_edge_options()  # Update dropdown menu when a new edge is added
 
 
     # For deleting an edge
@@ -256,22 +163,10 @@ class VisualisingPrims(GUI):
             self.update_edge_options()  # Update dropdown menu when an edge is deleted
         
         self.delete_edge_var.set("   ")
-
-        # Reset colors of nodes and edges
-        for node in self.nodes:
-            self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
-        for edge in self.edges:
-            self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
-            
-        # Clears the info text widget 
-        self.info_text_widget.configure(state='normal')
-        self.info_text_widget.delete("1.0", tk.END)
-        self.info_text_widget.configure(state='disabled') 
-
+        self.reset_node_and_edge_colors()  
+        self.clear_info_text()  
         self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
-
         self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
-
         self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
 
 
@@ -342,36 +237,14 @@ class VisualisingPrims(GUI):
             self.selected_node = clicked_node
             self.drag_start_pos = (x, y)
         else:
-            # Reset colors of nodes and edges
-            for node in self.nodes:
-                self.canvas.itemconfig(node.id, fill="blue", outline = "black")  # Reset node color to blue
-            for edge in self.edges:
-                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
-            
-            # Clears the info text widget 
-            self.info_text_widget.configure(state='normal')
-            self.info_text_widget.delete("1.0", tk.END)
-            self.info_text_widget.configure(state='disabled') 
-
+            self.reset_node_and_edge_colors()  # Reset colors of nodes and edges
+            self.clear_info_text()  # Clear the info text widget    
             self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
-
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
-
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             
-            # There might be a better way of doing this but this works for now
-            for edge in self.edges:     # If canvas is clicked when only showing MST edges, show all edges
-                if not edge.is_mst_edge:
-                    # Show the edge
-                    current_state = self.canvas.itemcget(edge.line_id, 'state')
-                    reset_state = 'normal' if current_state == 'hidden' else 'normal'
-                    self.canvas.itemconfigure(edge.line_id, state=reset_state)
-                    self.canvas.itemconfigure(edge.midpoint_id, state=reset_state)
-
-                    # Show the weight label 
-                    current_state_text = self.canvas.itemcget(edge.text_id, 'state')
-                    reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
-                    self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
+            # If canvas is clicked when only showing MST edges after Prim's, show all edges
+            self.unhide_edges()
 
             # If no node is clicked, create a new node
             node_identifier = generate_node_identifier(self.node_counter)
@@ -406,7 +279,7 @@ class VisualisingPrims(GUI):
             y = random.randint(self.top_margin, canvas_height - 15)
             node_identifier = generate_node_identifier(self.node_counter)
             new_node = Node(x, y, node_identifier)
-            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black")
+            new_node.id = self.canvas.create_oval(x - 18, y - 18, x + 18, y + 18, fill="blue", outline = "black", width = 3)
             new_node.text_id = self.canvas.create_text(x, y, text=node_identifier, font=("Arial", 14))
             self.nodes.append(new_node)
             self.node_counter += 1
@@ -439,56 +312,28 @@ class VisualisingPrims(GUI):
                 created_edges.add((start_node.identifier, end_node.identifier))
 
         self.status_label.configure(text="Generated random graph")
-        
         self.reset_button.configure(state='normal') # Enable "Reset Graph" button when random graph is generated
 
 
-    # Resets the graph for blank canvas
     def reset_graph(self):
-        # Clear the canvas
         self.canvas.delete("all")
-
-        # Reset the lists
         self.nodes = []
         self.edges = []
-
-        # Reset the node counter and update dropdown menus
         self.node_counter = 0
         self.update_node_options()
-
-        # Reset notificiation label
         self.status_label.configure(text="Graph has been reset")
-
-        # Clears the info text widget 
-        self.info_text_widget.configure(state='normal')
-        self.info_text_widget.delete("1.0", tk.END)
-        self.info_text_widget.configure(state='disabled') 
-
-        # Disables the toggle button when graph is reset
+        self.clear_info_text()  # Clear the info text widget
         self.toggle_mst_button.configure(state='disabled', text='Show MST only')  
-
-        # Reset the dropdown menus and weight entry field
         self.default_dropdown_labels()
+        self.reset_button.configure(state='disabled')
+        self.show_placeholder_text()
 
-        # Clear the dropdown menus
-        self.start_node_menu["menu"].delete(0, "end")
-        self.end_node_menu["menu"].delete(0, "end")
-        self.start_vertex_menu["menu"].delete(0, "end")
-        self.delete_node_menu["menu"].delete(0, "end")
-        self.delete_edge_menu["menu"].delete(0, "end")
-
-        # Add placeholder instruction
+        # Add placeholder instructions to dropdown menus
         self.start_node_menu["menu"].add_command(label="No nodes available")
         self.end_node_menu["menu"].add_command(label="No nodes available")
         self.start_vertex_menu["menu"].add_command(label="No nodes available")
         self.delete_node_menu["menu"].add_command(label="No nodes available")
         self.delete_edge_menu["menu"].add_command(label="No edges available")
-
-        # Disable "Reset Graph" button
-        self.reset_button.configure(state='disabled')
-
-        # Show the placeholder text
-        self.show_placeholder_text()
 
 
     # For reset graph confirmation pop up
@@ -548,6 +393,7 @@ class VisualisingPrims(GUI):
         except Exception as e:
             messagebox.showerror("Import Error", f"An error occurred: {e}", parent=self)
 
+
     ##########################################
     # All of below is for Prim's integration #
     ##########################################
@@ -605,14 +451,11 @@ class VisualisingPrims(GUI):
                     if (edge.start_node.identifier, edge.end_node.identifier) == e or \
                        (edge.end_node.identifier, edge.start_node.identifier) == e:
                         edge.is_mst_edge = True
-            # Update TV
+                
             Tv.add(w)
 
             self.update_info_text(f"Added edge {e} to the minimum spanning tree.\n\n")
             yield e, w  # Pause the algorithm and return the added edge
-
-            print(f"\nAdded edge {e} to the minimum spanning tree.")
-            print("Current minimum spanning tree edges:", Te)
 
             # Update L(v) for v ∈ (V − Tv) if there is an edge (w, v) or (v, w) in E with weight less than L(v)
             for v in (V - Tv):
@@ -620,9 +463,6 @@ class VisualisingPrims(GUI):
                     L[v] = W[(w, v)]
                 elif (v, w) in E and W[(v, w)] < L[v]:
                     L[v] = W[(v, w)]
-
-            print("\nUpdated L table after including vertex", w, ":", L)
-
             
             self.update_info_text(f"Updated L table: {L}\n\n")
             yield
@@ -638,35 +478,14 @@ class VisualisingPrims(GUI):
     # For starting Prim's on graph
     def generate_mst(self):
         try:
-            # Clears the info text widget 
-            self.info_text_widget.configure(state='normal')
-            self.info_text_widget.delete("1.0", tk.END)
-            self.info_text_widget.configure(state='disabled')  
-
+            self.clear_info_text()  # Clear the info text widget 
             self.start_time = time.time()  # Record start time
+
             if len(self.nodes) == 0:
                 raise ValueError("Please add nodes and edges to the canvas.")
             
-            # Reset colors of nodes and edges
-            for node in self.nodes:
-                self.canvas.itemconfig(node.id, fill="blue")  # Reset node color to blue
-            for edge in self.edges:
-                self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
-            
-            # Below for loop should be put into a method and called as it is reused in multiple places
-            for edge in self.edges:     # If canvas is clicked when only showing MST edges, show all edges
-                if not edge.is_mst_edge:
-                    # Show the edge
-                    current_state = self.canvas.itemcget(edge.line_id, 'state')
-                    reset_state = 'normal' if current_state == 'hidden' else 'normal'
-                    self.canvas.itemconfigure(edge.line_id, state=reset_state)
-                    self.canvas.itemconfigure(edge.midpoint_id, state=reset_state)
-
-                    # Show the weight label 
-                    current_state_text = self.canvas.itemcget(edge.text_id, 'state')
-                    reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
-                    self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
-
+            self.reset_node_and_edge_colors()  # Reset colors of nodes and edges
+            self.unhide_edges()  # Unhide all edges if they were hidden from previous Prim's run
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if Run Prims is clicked 
 
             V, E, W = extract_graph_data(self.nodes, self.edges)
@@ -693,7 +512,7 @@ class VisualisingPrims(GUI):
             self.status_label.configure(text=f"Error: {e}")
     
 
-    # For proceeding through the algorithm with Next Step button
+    # For proceeding through the algorithm with "Next Step" button
     def next_step(self):
         try:
             # Proceed to the next step in the generator
@@ -703,11 +522,9 @@ class VisualisingPrims(GUI):
         
             if result is not None:
                 edge_added, node_visited = result
-
                 # Highlight the added edge
                 if edge_added:
                     self.visualize_mst(edge_added)
-                
                 # Highlight the visited node
                 if node_visited:
                     self.highlight_node(node_visited)
@@ -738,10 +555,12 @@ class VisualisingPrims(GUI):
         # Find the node by its identifier and update its color to indicate it's been visited
         for node in self.nodes:
             if self.start_vertex_var.get() == node.identifier:
-                self.canvas.itemconfig(node.id, fill="orange", outline = "green")  # Outline starting node green to distinguish * MAKE OUTLINE THICKER *
+                # Here you set the outline to green and make it thicker
+                self.canvas.itemconfig(node.id, fill="orange", outline="red", width=3)  # Make the outline thicker
             elif node.identifier == node_identifier:
-                self.canvas.itemconfig(node.id, fill="orange", outline = "black")  # Colour visited node orange
-                break  # Break out of the loop once the node is found and highlighted    
+                self.canvas.itemconfig(node.id, fill="orange", outline="black", width = 0)  # Colour visited node orange
+                break  # Break out of the loop once the node is found and highlighted   
+
 
     # For toggling between showing the full graph and the MST
     def toggle_mst_view(self):
@@ -769,7 +588,39 @@ class VisualisingPrims(GUI):
         self.info_text_widget.configure(state='normal')
         self.info_text_widget.insert(tk.END, message)
         self.info_text_widget.see(tk.END)
-        self.info_text_widget.configure(state='disabled')  
+        self.info_text_widget.configure(state='disabled')
+
+
+    # For clearing text in prim's textbox
+    def clear_info_text(self):
+        self.info_text_widget.configure(state='normal')
+        self.info_text_widget.delete("1.0", tk.END)
+        self.info_text_widget.configure(state='disabled')
+
+
+    # For resetting colours of nodes and edges on canvas
+    def reset_node_and_edge_colors(self):
+        # Reset colors of nodes and edges
+        for node in self.nodes:
+            self.canvas.itemconfig(node.id, fill="blue", outline = "black", width = 3)  # Reset node color to blue
+        for edge in self.edges:
+            self.canvas.itemconfig(edge.line_id, width=2, fill="black")  # Reset edge color to black
+    
+
+    # For unhiding nodes and edges on canvas
+    def unhide_edges(self):
+        for edge in self.edges:     
+                if not edge.is_mst_edge:
+                    # Show the edge
+                    current_state = self.canvas.itemcget(edge.line_id, 'state')
+                    reset_state = 'normal' if current_state == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.line_id, state=reset_state)
+                    self.canvas.itemconfigure(edge.midpoint_id, state=reset_state)
+
+                    # Show the weight label 
+                    current_state_text = self.canvas.itemcget(edge.text_id, 'state')
+                    reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
+                    self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
 
 
 if __name__ == "__main__":

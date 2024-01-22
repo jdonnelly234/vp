@@ -1,11 +1,10 @@
 import customtkinter as ctk
-from customtkinter import E, END, N, NO, S, W, X, Y, CTkInputDialog
 import tkinter as tk
-from tkinter import OptionMenu, StringVar, Entry, messagebox, filedialog, simpledialog
+from tkinter import OptionMenu, StringVar
 from config import *
 from utils import *
 
-# For setting UI components
+# GUI class that inherits from the custom tkinter class, handles all GUI related changes except canvas changes related to Prim's
 class GUI(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -164,3 +163,65 @@ class GUI(ctk.CTk):
         self.columnconfigure(1, weight=1)
         for i in range(8):  
             self.rowconfigure(i, weight=1)
+    
+
+    # For updating all node related things in drop down menus
+    def update_node_options(self):
+        # Update the options in the dropdown menus for start nodes
+        start_menu = self.start_node_menu["menu"]
+        start_menu.delete(0, "end")
+        for node in self.nodes:
+            print(f"Adding {node.identifier} to start node menu")
+            start_menu.add_command(label=node.identifier, command=tk._setit(self.start_node_var, node.identifier))
+            
+        # Update the options in the dropdown menus for end nodes
+        end_menu = self.end_node_menu["menu"]
+        end_menu.delete(0, "end")
+        for node in self.nodes:
+            print(f"Adding {node.identifier} to end node menu")
+            end_menu.add_command(label=node.identifier, command=tk._setit(self.end_node_var, node.identifier))
+        
+        # Update the options in the dropdown menu for starting vertex
+        start_vertex_menu = self.start_vertex_menu["menu"]
+        start_vertex_menu.delete(0, "end")
+        for node in self.nodes:
+            start_vertex_menu.add_command(label=node.identifier, command=tk._setit(self.start_vertex_var, node.identifier))
+        
+        # Update the options in the dropdown menu for node deletion
+        delete_node_menu = self.delete_node_menu["menu"]
+        delete_node_menu.delete(0, "end")
+        for node in self.nodes:
+            delete_node_menu.add_command(label=node.identifier, command=tk._setit(self.delete_node_var, node.identifier))
+
+
+    # For updating all edge related things in drop down menus
+    def update_edge_options(self):
+        # Update the options in the dropdown menu for edge deletion
+        delete_edge_menu = self.delete_edge_menu["menu"]
+        delete_edge_menu.delete(0, "end")
+        for edge in self.edges:
+            edge_identifier = f"{edge.start_node.identifier} - {edge.end_node.identifier}"
+            delete_edge_menu.add_command(label=edge_identifier, command=tk._setit(self.delete_edge_var, edge_identifier))
+
+        if not self.edges:  # Add placeholder text if no edges are left
+            delete_edge_menu.add_command(label="No edges available")
+
+    # Generic method to reset the dropdown menus and weight entry field to default values
+    def default_dropdown_labels(self):
+        self.start_vertex_var.set("Source")  # Default values for dropdowns
+        self.start_node_var.set("")
+        self.end_node_var.set("")
+        self.weight_var.set("")
+        self.delete_node_var.set("")
+        self.finalize_button.configure(text="Run Prims")  # Reset the button text
+    
+
+    # Method to show the placeholder text on the canvas
+    def show_placeholder_text(self):
+        if not self.nodes and not self.edges:  # If there are no nodes or edges
+            self.canvas.itemconfig(self.placeholder_text_id, state="normal")
+    
+
+    # Method to hide the placeholder text on the canvas
+    def hide_placeholder_text(self):
+        self.canvas.itemconfig(self.placeholder_text_id, state="hidden")

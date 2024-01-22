@@ -30,24 +30,15 @@
         {"start": "J", "end": "G", "weight": 17},
         {"start": "J", "end": "F", "weight": 18},
         {"start": "J", "end": "E", "weight": 19},
-        {"start": "J", "end": "D", "weight": 20},
-        {"start": "J", "end": "C", "weight": 21},
-        {"start": "J", "end": "B", "weight": 22},
         {"start": "J", "end": "A", "weight": 23},
         {"start": "J", "end": "I", "weight": 24},
         {"start": "J", "end": "H", "weight": 25},
         {"start": "J", "end": "G", "weight": 26},
-        {"start": "J", "end": "F", "weight": 27},
         {"start": "J", "end": "E", "weight": 28},
         {"start": "J", "end": "D", "weight": 29},
         {"start": "J", "end": "C", "weight": 30},
-        {"start": "J", "end": "B", "weight": 31},
-        {"start": "J", "end": "A", "weight": 32},
-        {"start": "J", "end": "I", "weight": 33},
-        {"start": "J", "end": "H", "weight": 34},
-        {"start": "J", "end": "G", "weight": 35},
-        {"start": "J", "end": "F", "weight": 36},
-        {"start": "J", "end": "E", "weight": 37}
+        {"start": "J", "end": "B", "weight": 31}
+        
     ]
     
 }
