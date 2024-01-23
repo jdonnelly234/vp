@@ -5,7 +5,7 @@ from config import *
 from utils import *
 
 # GUI class that inherits from the custom tkinter class, handles all GUI related changes except canvas changes related to Prim's
-class GUI(ctk.CTk):
+class GraphVisualiserGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
 

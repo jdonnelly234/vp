@@ -5,12 +5,12 @@ import time
 
 from node import Node
 from edge import Edge
-from gui import GUI
+from gui import GraphVisualiserGUI
 from utils import *
 from config import *
 
-# Visualising Prim's main application class
-class VisualisingPrims(GUI):
+# Visualising Prim's main graph application class
+class VisualisingPrims(GraphVisualiserGUI):
     def __init__(self):
         super().__init__()
         self.nodes = []  # List to store nodes
