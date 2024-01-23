@@ -5,7 +5,7 @@ import time
 
 from node import Node
 from edge import Edge
-from gui import GraphVisualiserGUI
+from vp_graph_gui import GraphVisualiserGUI
 from utils import *
 from config import *
 
@@ -623,6 +623,3 @@ class VisualisingPrims(GraphVisualiserGUI):
                     self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
 
 
-if __name__ == "__main__":
-    app = VisualisingPrims()
-    app.mainloop()
