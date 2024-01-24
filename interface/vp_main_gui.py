@@ -1,30 +1,33 @@
 import customtkinter as ctk
 from vp_graph import VisualisingPrims
+from vp_complexity import ComplexityAnalyser
 from config import *
+from PIL import Image
+
 
 class MainMenu(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Welcome to Visualising Prim's.")
+        self.title("Visualising Prim's")
 
-        window_width = 600
-        window_height = 600
+        main_menu_window_width = 600
+        main_menu_window_height = 600
 
         # Get the screen dimension
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
 
         # Find the center point
-        center_x = int((screen_width - window_width) / 2)
-        center_y = int((screen_height - window_height) / 2)
+        center_x = int((screen_width - main_menu_window_width) / 2)
+        center_y = int((screen_height - main_menu_window_height) / 2)
 
         # Set the position of the window to the center of the screen
-        self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.geometry(f'{main_menu_window_width}x{main_menu_window_height}+{center_x}+{center_y}')
 
         # Minimum and maximum size for the window
-        self.minsize(window_width, window_height)
-        self.maxsize(window_width, window_height)
+        self.minsize(main_menu_window_width, main_menu_window_height)
+        self.maxsize(main_menu_window_width, main_menu_window_height)
 
         # Configure the grid for equal-sized columns
         self.grid_columnconfigure(0, weight=1)
@@ -34,7 +37,7 @@ class MainMenu(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         # Create left and right frames
-        self.left_frame = ctk.CTkFrame(self, corner_radius=0, bg_color=FRAME_BG_COLOR)
+        self.left_frame = ctk.CTkFrame(self, corner_radius=50, fg_color="#427BD2", background_corner_colors=["#427BD2", "#252424", "#252424", "#427BD2"], bg_color="transparent")
         self.left_frame.grid(row=0, column=0, sticky='nsew')  
 
         self.right_frame = ctk.CTkFrame(self, corner_radius=0, bg_color="transparent", fg_color="transparent")
@@ -48,7 +51,7 @@ class MainMenu(ctk.CTk):
         self.right_frame.grid_columnconfigure(2, weight=1)
 
         # Create and place buttons in the right frame
-        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Graph Visualiser", command=self.launch_graph_visualiser)
+        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Prim's Visualiser", command=self.launch_graph_visualiser)
         self.graph_visualiser_button.grid(row=8, column=1, sticky='ew')
 
         self.complexity_analyser_button = ctk.CTkButton(self.right_frame, text="Complexity Analyser", command=self.launch_complexity_analyser)
@@ -69,7 +72,9 @@ class MainMenu(ctk.CTk):
         visualiser.mainloop()
 
     def launch_complexity_analyser(self):
-        print("Under development.....")
+        self.withdraw()
+        complexity = ComplexityAnalyser()
+        complexity.mainloop()
 
     def launch_help(self):
         print("Under development.....")

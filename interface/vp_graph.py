@@ -64,6 +64,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             self.status_label.configure(text=f"Node {node_identifier} and its edges have been deleted")
+            self.unhide_edges()
 
             # If no nodes are left, show placeholder text
             if not self.nodes:
@@ -135,6 +136,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
+            self.unhide_edges()
             
         except ValueError as e:
             print(f"Error creating edge: {e}")
@@ -168,6 +170,7 @@ class VisualisingPrims(GraphVisualiserGUI):
         self.next_step_button.configure(state='disabled')  # Disabled if canvas is clicked during Prim's
         self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
         self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
+        self.unhide_edges()
 
 
     # Handles scenarios where user drags nodes around
@@ -512,7 +515,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.status_label.configure(text=f"Error: {e}")
     
 
-    # For proceeding through the algorithm with "Next Step" button
+    # For proceeding through the algorithm with "Next Step" button using generator
     def next_step(self):
         try:
             # Proceed to the next step in the generator
@@ -547,7 +550,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             if (edge.start_node.identifier == start_id and edge.end_node.identifier == end_id) or \
                 (edge.start_node.identifier == end_id and edge.end_node.identifier == start_id):
                 self.canvas.itemconfig(edge.line_id, fill="orange", width=3)
-                break  # Once the edge is found and highlighted, exit the loop
+                break  
 
 
     # For highlighting MST nodes
@@ -555,11 +558,11 @@ class VisualisingPrims(GraphVisualiserGUI):
         # Find the node by its identifier and update its color to indicate it's been visited
         for node in self.nodes:
             if self.start_vertex_var.get() == node.identifier:
-                # Here you set the outline to green and make it thicker
-                self.canvas.itemconfig(node.id, fill="orange", outline="red", width=3)  # Make the outline thicker
+                # If source node, outline in red
+                self.canvas.itemconfig(node.id, fill="orange", outline="red", width=3)  
             elif node.identifier == node_identifier:
                 self.canvas.itemconfig(node.id, fill="orange", outline="black", width = 0)  # Colour visited node orange
-                break  # Break out of the loop once the node is found and highlighted   
+                break    
 
 
     # For toggling between showing the full graph and the MST

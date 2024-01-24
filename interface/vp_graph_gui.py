@@ -11,22 +11,19 @@ class GraphVisualiserGUI(ctk.CTk):
 
         self.title("Visualising Prim's")
 
-        window_width = 1200
-        window_height = 800
-
         # Get the screen dimension
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
 
         # Find the center point
-        center_x = int((screen_width - window_width) / 2)
-        center_y = int((screen_height - window_height) / 2)
+        center_x = int((screen_width - WINDOW_WIDTH) / 2)
+        center_y = int((screen_height - WINDOW_HEIGHT) / 2)
 
         # Set the position of the window to the center of the screen
-        self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{center_x}+{center_y}')
 
         # Minimum size for the window to avoid issues with resizing
-        self.minsize(window_width, window_height) 
+        self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT) 
 
 
         self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
@@ -192,7 +189,12 @@ class GraphVisualiserGUI(ctk.CTk):
         delete_node_menu.delete(0, "end")
         for node in self.nodes:
             delete_node_menu.add_command(label=node.identifier, command=tk._setit(self.delete_node_var, node.identifier))
-
+        
+        delete_edge_menu = self.delete_edge_menu["menu"]
+        delete_edge_menu.delete(0, "end")
+        for edge in self.edges:
+            edge_identifier = f"{edge.start_node.identifier} - {edge.end_node.identifier}"
+            delete_edge_menu.add_command(label=edge_identifier, command=tk._setit(self.delete_edge_var, edge_identifier))
 
     # For updating all edge related things in drop down menus
     def update_edge_options(self):
