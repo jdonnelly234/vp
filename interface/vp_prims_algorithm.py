@@ -11,6 +11,7 @@ def prim_minimum_spanning_tree(graph):
     Tv = set()  # Set of visited vertices
     u = next(iter(V))  # Starting vertex, choosing any vertex in V
     L = {}      # Dictionary for L values of each edge
+    num_comparisons = 0
 
     Tv.add(u)           #Adding initial vertex to Tv
 
@@ -30,6 +31,9 @@ def prim_minimum_spanning_tree(graph):
     while Tv != V:
         # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
         w = min((v for v in (V - Tv)), key=lambda v: L[v])
+               
+        # Increment comparison count by (V - Tv) - 1 since min checks each element once
+        num_comparisons += len(V - Tv) - 1  
 
         # Find the associated edge e from TV
         e = None
@@ -38,9 +42,11 @@ def prim_minimum_spanning_tree(graph):
             if (v, w) in E and W[(v, w)] < min_weight:
                 e = (v, w)
                 min_weight = W[(v, w)]
+                num_comparisons += 1
             elif (w, v) in E and W[(w, v)] < min_weight:
                 e = (w, v)
                 min_weight = W[(w, v)]
+                num_comparisons += 1
 
         # Add the edge e to TE
         Te.add(e)
@@ -55,9 +61,11 @@ def prim_minimum_spanning_tree(graph):
         for v in (V - Tv):
             if (w, v) in E and W[(w, v)] < L[v]:
                 L[v] = W[(w, v)]
+                num_comparisons += 1
             elif (v, w) in E and W[(v, w)] < L[v]:
                 L[v] = W[(v, w)]
+                num_comparisons += 1
 
         print("\nUpdated L table after including vertex", w, ":", L)
 
-    return Te
+    return Te, num_comparisons
