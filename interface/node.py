@@ -1,4 +1,4 @@
-# For node objects
+# For node objects in visualiser
 class Node:
     def __init__(self, x, y, identifier):
         self.x = x  # x-coordinate of the node

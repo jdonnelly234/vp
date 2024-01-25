@@ -64,6 +64,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             self.status_label.configure(text=f"Node {node_identifier} and its edges have been deleted")
+            self.reset_node_and_edge_colors()  
             self.unhide_edges()
 
             # If no nodes are left, show placeholder text
@@ -411,6 +412,8 @@ class VisualisingPrims(GraphVisualiserGUI):
         L = {}      # Dictionary for L values of each edge
 
         Tv.add(u)           #Adding initial vertex to Tv
+
+        print(graph)
         
         # Initialize L(v) for all vertices
         for v in V - Tv:

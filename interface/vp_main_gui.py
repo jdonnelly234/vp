@@ -63,6 +63,9 @@ class MainMenu(ctk.CTk):
         self.help_button = ctk.CTkButton(self.right_frame, text="Help", command=self.launch_help)
         self.help_button.grid(row=11, column=1, sticky='ew')
 
+        self.exit_button = ctk.CTkButton(self.right_frame, text="Exit", command=self.launch_exit)
+        self.exit_button.grid(row=12, column=1, sticky='ew')
+
         self.main_title = ctk.CTkLabel(self.right_frame, text="Visualising Prim's", font=TITLE_FONT)
         self.main_title.grid(row=4, column=1, pady=10, sticky='ew')
 
@@ -81,3 +84,6 @@ class MainMenu(ctk.CTk):
     
     def launch_what_is_prims(self):
         print("Under development.....")
+
+    def launch_exit(self):
+        self.destroy()

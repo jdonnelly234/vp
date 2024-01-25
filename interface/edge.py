@@ -1,4 +1,4 @@
-# For edge objects
+# For edge objects in visualiser
 class Edge:
     def __init__(self, start_node, end_node, weight):
         self.start_node = start_node    # Start node of the edge
