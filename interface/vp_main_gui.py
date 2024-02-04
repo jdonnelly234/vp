@@ -44,7 +44,7 @@ class MainMenu(ctk.CTk):
         self.right_frame.grid(row=0, column=1, sticky='nsew', padx=30)  
 
         # Configure the right frame for centered button placement
-        for i in range(20):  # Adjust the range as needed for vertical alignment
+        for i in range(20):  
             self.right_frame.grid_rowconfigure(i, weight=1)
 
         self.right_frame.grid_columnconfigure(0, weight=1)

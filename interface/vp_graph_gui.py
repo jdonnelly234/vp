@@ -25,9 +25,7 @@ class GraphVisualiserGUI(ctk.CTk):
         # Minimum size for the window to avoid issues with resizing
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT) 
 
-
         self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
-
 
         # Frames for different sections
         self.left_frame = ctk.CTkFrame(self, width=200, fg_color=FRAME_FG_COLOR, corner_radius=0)
@@ -70,28 +68,28 @@ class GraphVisualiserGUI(ctk.CTk):
         self.delete_node_var = StringVar(self)
         self.delete_edge_var = StringVar(self)
         
-
+        default_option = "Add nodes to see them here"
         # Dropdown menus 
-        self.start_node_menu = OptionMenu(self, self.start_node_var, "Add nodes to see them here")
-        self.start_node_menu.grid(in_=self.left_frame, row=1, column=0, pady=5, padx=10, sticky='e')
+        self.start_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.start_node_var, values=[default_option], width=60)
+        self.start_node_menu.grid(row=1, column=0, pady=5, padx=10, sticky='e')
 
-        self.end_node_menu = OptionMenu(self, self.end_node_var, "Add nodes to see them here")
-        self.end_node_menu.grid(in_=self.left_frame, row=2, column=0, pady=5, padx=10, sticky='e')
+        self.end_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.end_node_var, values=[default_option], width=60)
+        self.end_node_menu.grid(row=2, column=0, pady=5, padx=10, sticky='e')
 
-        self.delete_node_menu = OptionMenu(self.left_frame, self.delete_node_var, "Add nodes to see them here")
+        self.delete_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_node_var, values=[default_option], width=80)
         self.delete_node_menu.grid(row=6, column=0, pady=10, padx=10, sticky='w')
 
         self.delete_edge_var.set("   ") # Default value
-        self.delete_edge_menu = OptionMenu(self.left_frame, self.delete_edge_var, "Add edges to see them here")
+        self.delete_edge_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_edge_var, values=[default_option], width=80)
         self.delete_edge_menu.grid(row=7, column=0, pady=10, padx=10, sticky='w')
 
-        self.start_vertex_menu = OptionMenu(self.right_frame, self.start_vertex_var, "Add nodes to see them here")
+        self.start_vertex_menu = ctk.CTkOptionMenu(self.right_frame, variable=self.start_vertex_var, values=[default_option], width=85, dynamic_resizing=False)
         self.start_vertex_menu.grid(row=1, column=1, pady=10, padx=(1,10), sticky='e')
         self.start_vertex_var.set("Source")  # Default value
 
 
         # Weight entry field
-        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var, width=50)
+        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var, width=60)
         self.weight_entry.grid(in_=self.left_frame, row=3, column=0, pady=10, padx=10, sticky='e')
 
 
@@ -139,6 +137,9 @@ class GraphVisualiserGUI(ctk.CTk):
         self.import_graph_button = ctk.CTkButton(self, text="Import Graph", width=20, command=self.import_graph)
         self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='ew')
 
+        # Button to return to the main menu
+        self.return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
+        self.return_button.grid(row=12, column=0, pady=10, padx=10, sticky='ew')  # Adjust grid row and column accordingly
 
         # Text widget to display Prim's algorithm steps
         self.info_text_widget = ctk.CTkTextbox(self, height=500, width=300)
@@ -162,51 +163,35 @@ class GraphVisualiserGUI(ctk.CTk):
             self.rowconfigure(i, weight=1)
     
 
-    # For updating all node related things in drop down menus
     def update_node_options(self):
-        # Update the options in the dropdown menus for start nodes
-        start_menu = self.start_node_menu["menu"]
-        start_menu.delete(0, "end")
-        for node in self.nodes:
-            print(f"Adding {node.identifier} to start node menu")
-            start_menu.add_command(label=node.identifier, command=tk._setit(self.start_node_var, node.identifier))
-            
-        # Update the options in the dropdown menus for end nodes
-        end_menu = self.end_node_menu["menu"]
-        end_menu.delete(0, "end")
-        for node in self.nodes:
-            print(f"Adding {node.identifier} to end node menu")
-            end_menu.add_command(label=node.identifier, command=tk._setit(self.end_node_var, node.identifier))
+        # Collect node identifiers for node-related dropdowns
+        node_identifiers = [node.identifier for node in self.nodes]
+        if not node_identifiers:
+            node_identifiers = ["Add nodes to see them here"]  # Placeholder if empty
         
-        # Update the options in the dropdown menu for starting vertex
-        start_vertex_menu = self.start_vertex_menu["menu"]
-        start_vertex_menu.delete(0, "end")
-        for node in self.nodes:
-            start_vertex_menu.add_command(label=node.identifier, command=tk._setit(self.start_vertex_var, node.identifier))
+        # Update the options in the node-related dropdown menus
+        self.start_node_menu.configure(values=node_identifiers)
+        self.end_node_menu.configure(values=node_identifiers)
+        self.delete_node_menu.configure(values=node_identifiers)
+        self.start_vertex_menu.configure(values=node_identifiers)
         
-        # Update the options in the dropdown menu for node deletion
-        delete_node_menu = self.delete_node_menu["menu"]
-        delete_node_menu.delete(0, "end")
-        for node in self.nodes:
-            delete_node_menu.add_command(label=node.identifier, command=tk._setit(self.delete_node_var, node.identifier))
+        # Collect edge identifiers for the edge deletion dropdown
+        edge_identifiers = [f"{edge.start_node.identifier} - {edge.end_node.identifier}" for edge in self.edges]
+        if not edge_identifiers:
+            edge_identifiers = ["Add edges to see them here"]  # Placeholder if empty
         
-        delete_edge_menu = self.delete_edge_menu["menu"]
-        delete_edge_menu.delete(0, "end")
-        for edge in self.edges:
-            edge_identifier = f"{edge.start_node.identifier} - {edge.end_node.identifier}"
-            delete_edge_menu.add_command(label=edge_identifier, command=tk._setit(self.delete_edge_var, edge_identifier))
+        # Update the options in the edge-related dropdown menu
+        self.delete_edge_menu.configure(values=edge_identifiers)
 
     # For updating all edge related things in drop down menus
     def update_edge_options(self):
-        # Update the options in the dropdown menu for edge deletion
-        delete_edge_menu = self.delete_edge_menu["menu"]
-        delete_edge_menu.delete(0, "end")
-        for edge in self.edges:
-            edge_identifier = f"{edge.start_node.identifier} - {edge.end_node.identifier}"
-            delete_edge_menu.add_command(label=edge_identifier, command=tk._setit(self.delete_edge_var, edge_identifier))
-
-        if not self.edges:  # Add placeholder text if no edges are left
-            delete_edge_menu.add_command(label="No edges available")
+        # Collect edge identifiers for the edge deletion dropdown
+        edge_identifiers = [f"{edge.start_node.identifier} - {edge.end_node.identifier}" for edge in self.edges]
+        if not edge_identifiers:
+            edge_identifiers = ["Add edges to see them here"]  # Placeholder if empty
+        
+        # Update the options in the edge-related dropdown menu
+        self.delete_edge_menu.configure(values=edge_identifiers)
 
     # Generic method to reset the dropdown menus and weight entry field to default values
     def default_dropdown_labels(self):
@@ -227,3 +212,7 @@ class GraphVisualiserGUI(ctk.CTk):
     # Method to hide the placeholder text on the canvas
     def hide_placeholder_text(self):
         self.canvas.itemconfig(self.placeholder_text_id, state="hidden")
+
+    def return_to_main_menu(self):
+        self.destroy()
+        

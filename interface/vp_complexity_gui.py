@@ -24,3 +24,13 @@ class ComplexityGUI(ctk.CTk):
 
         # Minimum size for the window to avoid issues with resizing
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT) 
+
+         # Create left and right frames for metrics and graph
+        self.left_frame = ctk.CTkFrame(self, width=WINDOW_WIDTH * 0.25)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
+
+        self.right_frame = ctk.CTkFrame(self, width=WINDOW_WIDTH * 0.75)
+        self.right_frame.pack(padx=20, pady=20)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+     
+        

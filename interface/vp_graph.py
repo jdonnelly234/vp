@@ -332,12 +332,14 @@ class VisualisingPrims(GraphVisualiserGUI):
         self.reset_button.configure(state='disabled')
         self.show_placeholder_text()
 
+        default_nodes = "No nodes available"
+        default_edges = "No edges available"
         # Add placeholder instructions to dropdown menus
-        self.start_node_menu["menu"].add_command(label="No nodes available")
-        self.end_node_menu["menu"].add_command(label="No nodes available")
-        self.start_vertex_menu["menu"].add_command(label="No nodes available")
-        self.delete_node_menu["menu"].add_command(label="No nodes available")
-        self.delete_edge_menu["menu"].add_command(label="No edges available")
+        self.start_node_menu.configure(values=[default_nodes])
+        self.end_node_menu.configure(values=[default_nodes])
+        self.start_vertex_menu.configure(values=[default_nodes])
+        self.delete_node_menu.configure(values=[default_nodes])
+        self.delete_edge_menu.configure(values=[default_edges])
 
 
     # For reset graph confirmation pop up

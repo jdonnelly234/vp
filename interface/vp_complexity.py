@@ -1,8 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
+import customtkinter as ctk
 import random
 import time
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from node import Node
 from edge import Edge
@@ -43,17 +46,17 @@ class ComplexityAnalyser(ComplexityGUI):
         complexity_info += f"Algorithm Execution Time: {execution_time:.6f} seconds\n"
         complexity_info += f"Number of Comparisons: {num_comparisons}"
 
-        messagebox.showinfo("Complexity Metrics", complexity_info)
+        self.display_complexity_metrics(complexity_info)
 
         self.visualize_complexity(num_nodes)
 
-        
+
 
     def generate_complete_graph(self, num_nodes):
         # Reset to show correct number of nodes and comparisons on graph
-        self.nodes = []  # List to store nodes
-        self.edges = []  # List to store edges
-        self.node_counter = 0  # Counter to keep track of the number of nodes
+        self.nodes = [] 
+        self.edges = []  
+        self.node_counter = 0  
 
         # Create num_nodes 
         for i in range(num_nodes):
@@ -74,31 +77,34 @@ class ComplexityAnalyser(ComplexityGUI):
     
     
     def visualize_complexity(self, num_nodes):
-        comparisons = []  # List to store the number of comparisons for each graph
-        nodes = list(range(2, num_nodes + 1))  # List of node counts
-    
-        for n in nodes:
-            # Generate a complete graph with n nodes
-            print(f"Generating complete graph with {n} nodes...")
-            graph = self.generate_complete_graph(n)
-            print(graph)
-            # Calculate the number of comparisons for Prim's algorithm on this graph
-            _, num_comparisons = prim_minimum_spanning_tree(graph)
-            # Store the number of comparisons in the list
-            comparisons.append(num_comparisons)
-            
+        comparisons = []  
+        nodes = list(range(2, num_nodes + 1))  
 
-        print("Nodes: ", nodes)
-        print("Comparisons: ", comparisons)
+        for n in nodes:
+            graph = self.generate_complete_graph(n)
+            _, num_comparisons = prim_minimum_spanning_tree(graph)
+            comparisons.append(num_comparisons)
 
         nsquared = [n**2 for n in nodes]
 
-        plt.figure(figsize=(10, 5))
-        plt.plot(nodes, comparisons, marker='x', label='Prims Algorithm', color='red')
-        plt.plot(nodes, nsquared, marker='o', linestyle='dashed', label="n^2")
-        plt.xlabel("Number of Nodes")
-        plt.ylabel("Number of Comparisons")
-        plt.title("Prim's Algorithm Time Complexity")
-        plt.grid()
-        plt.show() 
+        # Create a Matplotlib figure and axis
+        fig = Figure(figsize=(10, 5))
+        ax = fig.add_subplot(111)
+
+        ax.plot(nodes, comparisons, label='Prims Algorithm', color='red')
+        ax.plot(nodes, nsquared, linestyle='dashed', label="n^2")
+        ax.set_xlabel("Number of nodes")
+        ax.set_ylabel("Number of comparisons")
+        ax.set_title("Prim's Algorithm Time Complexity for a complete graph with {num_nodes} nodes")
+        ax.grid()
+
+        # Embed the figure in the right frame
+        canvas = FigureCanvasTkAgg(fig, master=self.right_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+
+    def display_complexity_metrics(self, complexity_info):
+        metrics_label = ctk.CTkLabel(self.left_frame, text=complexity_info)
+        metrics_label.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
 
