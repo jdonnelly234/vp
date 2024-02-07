@@ -6,6 +6,8 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import platform
+import subprocess
 
 from node import Node
 from edge import Edge
@@ -22,16 +24,24 @@ class ComplexityAnalyser(ComplexityGUI):
         self.nodes = []  # List to store nodes
         self.edges = []  # List to store edges
         self.node_counter = 0  # Counter to keep track of the number of nodes
+        self.processor = platform.processor()
 
-        # Prompt the user for the number of nodes 
-        num_nodes = simpledialog.askinteger("Number of Nodes", "Enter the number of nodes:", minvalue=10, maxvalue=100, parent=self)
+        self.generate_and_analyse_graph()
+
+        
+
+    def generate_and_analyse_graph(self):
+        # Clear previous graph and metrics
+        self.clear_graph()
+        self.clear_metrics()
+
+        # Prompt the user for the number of nodes
+        num_nodes = simpledialog.askinteger("Number of Nodes", "Enter the number of nodes:", minvalue=5, maxvalue=250, parent=self)
         if num_nodes is None:
-            return  
+            return
 
         # Generate a complete graph with the specified number of nodes
         graph = self.generate_complete_graph(num_nodes)
-
-        print(graph)  
 
         # Run Prim's algorithm on the generated graph
         start_time = time.time()
@@ -39,18 +49,24 @@ class ComplexityAnalyser(ComplexityGUI):
         end_time = time.time()
         execution_time = end_time - start_time
 
-    
-        complexity_info = f"Number of Nodes: {num_nodes}\n"
-        complexity_info += f"Number of edges in original graph: {len(self.edges)}\n"
-        complexity_info += f"Number of edges in MST: {len(minimum_spanning_tree)}\n"
-        complexity_info += f"Algorithm Execution Time: {execution_time:.6f} seconds\n"
-        complexity_info += f"Number of Comparisons: {num_comparisons}"
+        # Display complexity metrics
+        self.display_complexity_metrics(num_nodes, self.edges, minimum_spanning_tree, execution_time, num_comparisons, self.processor)
 
-        self.display_complexity_metrics(complexity_info)
-
+        # Visualize the complexity
         self.visualize_complexity(num_nodes)
 
+        restart_button = ctk.CTkButton(self.left_frame, text="Restart", command=self.generate_and_analyse_graph)
+        restart_button.pack(side=tk.BOTTOM, pady=(50, 10))
+    
+    def clear_graph(self):
+        # Clear graph visualization
+        for widget in self.right_frame.winfo_children():
+            widget.destroy()
 
+    def clear_metrics(self):
+        # Clear complexity metrics
+        for widget in self.left_frame.winfo_children():
+            widget.destroy()
 
     def generate_complete_graph(self, num_nodes):
         # Reset to show correct number of nodes and comparisons on graph
@@ -64,7 +80,7 @@ class ComplexityAnalyser(ComplexityGUI):
             self.nodes.append(new_node)
             self.node_counter += 1
 
-        # Create edges between every pair of distinct nodes to form a complete graph
+        # Create edges between every pair of distinct nodes
         for i in range(len(self.nodes)):
             for j in range(i + 1, len(self.nodes)):
                 start_node = self.nodes[i]
@@ -95,7 +111,7 @@ class ComplexityAnalyser(ComplexityGUI):
         ax.plot(nodes, nsquared, linestyle='dashed', label="n^2")
         ax.set_xlabel("Number of nodes")
         ax.set_ylabel("Number of comparisons")
-        ax.set_title("Prim's Algorithm Time Complexity for a complete graph with {num_nodes} nodes")
+        ax.set_title(f"Time complexity of Prim's for a complete graph with {num_nodes} nodes")
         ax.grid()
 
         # Embed the figure in the right frame
@@ -104,7 +120,15 @@ class ComplexityAnalyser(ComplexityGUI):
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
 
-    def display_complexity_metrics(self, complexity_info):
-        metrics_label = ctk.CTkLabel(self.left_frame, text=complexity_info)
-        metrics_label.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
+    def display_complexity_metrics(self, num_nodes, edges, mst_edges, execution_time, num_comparisons, processor):
+        # Create and pack labels for each metric with headings
+        ctk.CTkLabel(self.left_frame, text="Complexity Metrics", font=TITLE_FONT).pack(side=tk.TOP, pady=(10, 50))
+        ctk.CTkLabel(self.left_frame, text=f"Processor: {processor}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP)
+        ctk.CTkLabel(self.left_frame, text=f"Number of Nodes: {num_nodes}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.left_frame, text=f"Number of edges in original graph: {len(edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.left_frame, text=f"Number of edges in MST: {len(mst_edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.left_frame, text=f"Algorithm Execution Time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.left_frame, text=f"Number of Comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+
+   
 

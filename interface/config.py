@@ -11,3 +11,4 @@ WINDOW_HEIGHT = 800
 
 # Heading font
 TITLE_FONT = ("Helvetica", 20, "bold")
+COMPLEXITY_SUBTITLE_FONT = ("Helvetica", 14, "italic")

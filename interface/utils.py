@@ -48,7 +48,7 @@ def extract_graph_data(nodes, edges):
 def generate_node_identifier(node_counter):
     # Generates a unique identifier for each node
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    quotient, remainder = divmod(node_counter, len(alphabet))  # self.node_counter / alphabet legnth returns quotient and remainder
+    quotient, remainder = divmod(node_counter, len(alphabet))  # node_counter is quotient and len(alphabet) remainder
     if quotient == 0:   # self.node_counter < 26
         return alphabet[remainder]
     else:               # if number of nodes exceeds amount of letters in the alphabet, start doubling identifiers ie. AA, BB ....

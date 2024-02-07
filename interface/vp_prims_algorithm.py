@@ -27,26 +27,24 @@ def prim_minimum_spanning_tree(graph):
     print("\nStarting with vertex:", u)
     print(f"Initial L table for vertex {u}:", L)
     
-
+    i = 0
     while Tv != V:
+        i += 1
         # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
         w = min((v for v in (V - Tv)), key=lambda v: L[v])
-               
-        # Increment comparison count by (V - Tv) - 1 since min checks each element once
-        num_comparisons += len(V - Tv) - 1  
+
 
         # Find the associated edge e from TV
         e = None
         min_weight = float('inf')
         for v in Tv:
-            if (v, w) in E and W[(v, w)] < min_weight:
-                e = (v, w)
-                min_weight = W[(v, w)]
-                num_comparisons += 1
-            elif (w, v) in E and W[(w, v)] < min_weight:
-                e = (w, v)
-                min_weight = W[(w, v)]
-                num_comparisons += 1
+            edge_weight = W.get((v, w), W.get((w, v)))
+            if edge_weight is not None:
+                num_comparisons += 1  # Counting weight comparison only
+                if edge_weight < min_weight:
+                    e = (v, w) if (v, w) in E else (w, v)
+                    min_weight = edge_weight
+
 
         # Add the edge e to TE
         Te.add(e)
@@ -59,13 +57,20 @@ def prim_minimum_spanning_tree(graph):
 
         # Update L(v) for v ∈ (V − Tv) if there is an edge (w, v) or (v, w) in E with weight less than L(v)
         for v in (V - Tv):
-            if (w, v) in E and W[(w, v)] < L[v]:
-                L[v] = W[(w, v)]
-                num_comparisons += 1
-            elif (v, w) in E and W[(v, w)] < L[v]:
-                L[v] = W[(v, w)]
-                num_comparisons += 1
-
+            edge_weight_vw = W.get((v, w))
+            edge_weight_wv = W.get((w, v))
+            
+            # Check the edge weight and count the comparison
+            if edge_weight_vw is not None:
+                num_comparisons += 1  # Counting weight comparison
+                if edge_weight_vw < L[v]:
+                    L[v] = edge_weight_vw
+            if edge_weight_wv is not None:
+                num_comparisons += 1  # Counting weight comparison
+                if edge_weight_wv < L[v]:
+                    L[v] = edge_weight_wv
+        
         print("\nUpdated L table after including vertex", w, ":", L)
+        print(f"NUMBER OF COMPARISONS AFTER {i} iterations:", num_comparisons)
 
     return Te, num_comparisons
