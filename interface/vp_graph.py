@@ -634,6 +634,6 @@ class VisualisingPrims(GraphVisualiserGUI):
     def return_to_main_menu(self):
         self.destroy()
         from vp_main_gui import MainMenu    #Importing here to avoid circular import
-        main_menu = MainMenu()  # Create a new instance of the MainMenu window
-        main_menu.mainloop()  # Start the MainMenu window's event loop
+        main_menu = MainMenu()  
+        main_menu.mainloop() 
 

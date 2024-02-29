@@ -57,6 +57,10 @@ class ComplexityAnalyser(ComplexityGUI):
 
         restart_button = ctk.CTkButton(self.left_frame, text="Restart", command=self.generate_and_analyse_graph)
         restart_button.pack(side=tk.BOTTOM, pady=(50, 10))
+
+        # Button to return to the main menu
+        return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
+        return_button.pack(side=tk.BOTTOM, pady=(50,10))
     
     def clear_graph(self):
         # Clear graph visualization
@@ -130,5 +134,10 @@ class ComplexityAnalyser(ComplexityGUI):
         ctk.CTkLabel(self.left_frame, text=f"Algorithm Execution Time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
         ctk.CTkLabel(self.left_frame, text=f"Number of Comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
 
-   
+    
+    def return_to_main_menu(self):
+        self.destroy()
+        from vp_main_gui import MainMenu    #Importing here to avoid circular import
+        main_menu = MainMenu()  
+        main_menu.mainloop() 
 

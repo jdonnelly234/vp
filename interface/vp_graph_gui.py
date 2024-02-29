@@ -200,6 +200,7 @@ class GraphVisualiserGUI(ctk.CTk):
         self.end_node_var.set("")
         self.weight_var.set("")
         self.delete_node_var.set("")
+        self.delete_edge_var.set("")
         self.finalize_button.configure(text="Run Prims")  # Reset the button text
     
 

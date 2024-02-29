@@ -70,9 +70,11 @@ class MainMenu(ctk.CTk):
         self.main_title.grid(row=4, column=1, pady=10, sticky='ew')
 
     def launch_graph_visualiser(self):
-        self.destroy()
+        self.withdraw()
         visualiser = VisualisingPrims()
         visualiser.mainloop()
+        self.deiconify()  # Show the main menu again after the visualiser is closed, this fixes segmentation fault
+
 
     def launch_complexity_analyser(self):
         self.withdraw()
@@ -83,7 +85,54 @@ class MainMenu(ctk.CTk):
         print("Under development.....")
     
     def launch_what_is_prims(self):
-        print("Under development.....")
+        # Create a Toplevel window
+        info_window = ctk.CTkToplevel(self)
+        info_window.title("What is Prim's Algorithm?")
+        info_window.geometry("500x300")  # Adjust size as needed
+
+        what_is_prims_width = 500
+        what_is_prims_height = 400
+
+        # Get the screen dimension
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        # Find the center point
+        center_x = int((screen_width - what_is_prims_width) / 2)
+        center_y = int((screen_height - what_is_prims_height) / 2)
+
+        # Set the position of the window to the center of the screen
+        info_window.geometry(f'{what_is_prims_width}x{what_is_prims_height}+{center_x}+{center_y}')
+
+        self.texts = [
+            "Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.",
+            "The algorithm operates by building this tree one node at a time, at each step adding the cheapest possible connection from the tree to another node.",
+            "It is used in network designing, where the goal is to connect all points with the minimum total weighting for the connections."
+        ]
+
+        self.current_text_index = 0
+
+        # Add your information about Prim's algorithm here
+        self.info_label = ctk.CTkLabel(info_window, text="Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph. This means it finds a subset of the edges that forms a tree that includes every vertex, where the total weight of all the edges in the tree is minimized.", wraplength=380, justify="left")
+        self.info_label.pack(pady=20, padx=20)
+
+        # Function to update the text
+        def update_text(direction):
+            self.current_text_index += direction
+            if self.current_text_index < 0:
+                self.current_text_index = 0  # Prevent going before the first text
+            elif self.current_text_index >= len(self.texts):
+                self.current_text_index = len(self.texts) - 1  # Prevent going past the last text
+            self.info_label.configure(text=self.texts[self.current_text_index])
+
+        # Next and Previous buttons
+        prev_button = ctk.CTkButton(info_window, text="Previous", command=lambda: update_text(-1))
+        prev_button.pack(side="left", padx=(50, 10), pady=20)
+
+        next_button = ctk.CTkButton(info_window, text="Next", command=lambda: update_text(1))
+        next_button.pack(side="right", padx=(10, 50), pady=20)
+
 
     def launch_exit(self):
         self.destroy()
+
