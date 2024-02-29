@@ -427,8 +427,8 @@ class VisualisingPrims(GraphVisualiserGUI):
                 L[v] = float("inf")
 
 
-        self.update_info_text(f"Starting with vertex {u}\n\n")
-        self.update_info_text(f"Initial L table for vertex {u}: {L}\n\n")
+        self.update_info_text(f"Starting with node {u}\n\n")
+        self.update_info_text(f"Initial L table for node {u}:\n{L}\n\n")
         yield
 
         total_weight = 0
@@ -437,7 +437,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             # Find w: L(w) = min{L(v) | v ∈ (V − Tv)}
             w = min((v for v in (V - Tv)), key=lambda v: L[v])                
             
-            self.update_info_text(f"Choosing next vertex with smallest L value: {w}\n\n")
+            self.update_info_text(f"Choosing next node with smallest L value: {w}\n\n")
 
             # Find the associated edge e from TV
             e = None
@@ -462,7 +462,7 @@ class VisualisingPrims(GraphVisualiserGUI):
                 
             Tv.add(w)
 
-            self.update_info_text(f"Added edge {e} to the minimum spanning tree.\n\n")
+            self.update_info_text(f"Added edge {e} to the MST.\n\n")
             yield e, w  # Pause the algorithm and return the added edge
 
             # Update L(v) for v ∈ (V − Tv) if there is an edge (w, v) or (v, w) in E with weight less than L(v)
@@ -472,14 +472,14 @@ class VisualisingPrims(GraphVisualiserGUI):
                 elif (v, w) in E and W[(v, w)] < L[v]:
                     L[v] = W[(v, w)]
             
-            self.update_info_text(f"Updated L table: {L}\n\n")
+            self.update_info_text(f"Updated L table:\n{L}\n\n")
             yield
             
-            self.update_info_text(f"Current visited vertices: {Tv}\n\n")
-            self.update_info_text(f"Updated minimum spanning tree edges: {Te}\n\n")
+            self.update_info_text(f"Current visited nodes (Tv):\n {Tv}\n\n")
+            self.update_info_text(f"Updated minimum spanning tree edges (Te):\n{Te}\n\n")
             yield
         
-        self.update_info_text(f"All vertices have been visited, therefore...\n\n-----Your final minimum spanning tree is----- \n\n {Te}\n\n The total weight of your MST is: {total_weight}\n\n---------------------------------------------")
+        self.update_info_text(f"Tv includes all nodes, therefore...\n\n-----Your final minimum spanning tree is----- \n\n {Te}\n\n The total weight of your MST is: {total_weight}\n\n---------------------------------------------")
         return Te
 
 
