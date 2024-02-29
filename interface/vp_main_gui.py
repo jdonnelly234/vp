@@ -70,7 +70,7 @@ class MainMenu(ctk.CTk):
         self.main_title.grid(row=4, column=1, pady=10, sticky='ew')
 
     def launch_graph_visualiser(self):
-        self.withdraw()
+        self.destroy()
         visualiser = VisualisingPrims()
         visualiser.mainloop()
 

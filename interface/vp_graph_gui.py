@@ -213,6 +213,4 @@ class GraphVisualiserGUI(ctk.CTk):
     def hide_placeholder_text(self):
         self.canvas.itemconfig(self.placeholder_text_id, state="hidden")
 
-    def return_to_main_menu(self):
-        self.destroy()
         
