@@ -82,7 +82,34 @@ class MainMenu(ctk.CTk):
         complexity.mainloop()
 
     def launch_help(self):
-        print("Under development.....")
+        # Create a Toplevel window for the help content
+        help_window = ctk.CTkToplevel(self)
+        help_window.title("Help")
+        help_window.geometry("500x300")  # Adjust size as needed
+
+        # Create the tab view within the new Toplevel window
+        helpTab = ctk.CTkTabview(help_window)
+
+        # Add content to the tabs (example for one tab)
+        guide_tab = ctk.CTkFrame(helpTab)
+        faq_tab = ctk.CTkFrame(helpTab)
+        accessibility_tab = ctk.CTkFrame(helpTab)
+
+        helpTab.add("Guide")
+        helpTab.add("FAQ")
+        helpTab.add("Accessibility")
+
+        # Add content to each tab
+        ctk.CTkLabel(guide_tab, text="Guide content goes here...")
+        ctk.CTkLabel(faq_tab, text="FAQ content goes here...")
+        ctk.CTkLabel(accessibility_tab, text="Accessibility content goes here...")
+
+        # Set the default tab to open
+        helpTab.set("Guide")
+
+        # Place the tab view in the window
+        helpTab.pack(fill='both', expand=True)
+
     
     def launch_what_is_prims(self):
         # Create a Toplevel window
@@ -136,3 +163,5 @@ class MainMenu(ctk.CTk):
     def launch_exit(self):
         self.destroy()
 
+
+        
