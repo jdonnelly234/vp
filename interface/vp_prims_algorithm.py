@@ -24,8 +24,7 @@ def prim_minimum_spanning_tree(graph):
         else:
             L[v] = float("inf")
 
-    print("\nStarting with vertex:", u)
-    print(f"Initial L table for vertex {u}:", L)
+    
     
     i = 0
     while Tv != V:
@@ -52,8 +51,7 @@ def prim_minimum_spanning_tree(graph):
         # Update TV
         Tv.add(w)
 
-        print(f"\nAdded edge {e} to the minimum spanning tree.")
-        print("Current minimum spanning tree edges:", Te)
+        
 
         # Update L(v) for v ∈ (V − Tv) if there is an edge (w, v) or (v, w) in E with weight less than L(v)
         for v in (V - Tv):
@@ -70,7 +68,6 @@ def prim_minimum_spanning_tree(graph):
                 if edge_weight_wv < L[v]:
                     L[v] = edge_weight_wv
         
-        print("\nUpdated L table after including vertex", w, ":", L)
-        print(f"NUMBER OF COMPARISONS AFTER {i} iterations:", num_comparisons)
+        
 
     return Te, num_comparisons

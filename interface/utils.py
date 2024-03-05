@@ -37,10 +37,6 @@ def extract_graph_data(nodes, edges):
         E.add((start_id, end_id))
         W[(start_id, end_id)] = edge.weight
 
-    print(f"Vertices: {V}")
-    print(f"Edges: {E}")
-    print(f"Weights: {W}")
-
     return V, E, W
 
 
