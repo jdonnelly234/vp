@@ -35,10 +35,11 @@ class ComplexityAnalyser(ComplexityGUI):
         self.clear_graph()
         self.clear_metrics()
 
+        num_nodes = 10
         # Prompt the user for the number of nodes
-        num_nodes = simpledialog.askinteger("Number of Nodes", "Enter the number of nodes:", minvalue=5, maxvalue=250, parent=self)
-        if num_nodes is None:
-            return
+        #num_nodes = simpledialog.askinteger("Number of Nodes", "Enter the number of nodes:", minvalue=5, maxvalue=250, parent=self)
+        #if num_nodes is None:
+        #    return
 
         # Generate a complete graph with the specified number of nodes
         graph = self.generate_complete_graph(num_nodes)
@@ -55,11 +56,11 @@ class ComplexityAnalyser(ComplexityGUI):
         # Visualize the complexity
         self.visualize_complexity(num_nodes)
 
-        restart_button = ctk.CTkButton(self.left_frame, text="Restart", command=self.generate_and_analyse_graph)
+        restart_button = ctk.CTkButton(self.lower_left_frame, text="Restart", command=self.generate_and_analyse_graph)
         restart_button.pack(side=tk.BOTTOM, pady=(50, 10))
 
         # Button to return to the main menu
-        return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
+        return_button = ctk.CTkButton(self.lower_left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
         return_button.pack(side=tk.BOTTOM, pady=(50,10))
     
     def clear_graph(self):
@@ -68,8 +69,8 @@ class ComplexityAnalyser(ComplexityGUI):
             widget.destroy()
 
     def clear_metrics(self):
-        # Clear complexity metrics
-        for widget in self.left_frame.winfo_children():
+        # Clear complexity metrics within lower frame without destroying the frames themselves
+        for widget in self.lower_left_frame.winfo_children():
             widget.destroy()
 
     def generate_complete_graph(self, num_nodes):
@@ -126,13 +127,12 @@ class ComplexityAnalyser(ComplexityGUI):
 
     def display_complexity_metrics(self, num_nodes, edges, mst_edges, execution_time, num_comparisons, processor):
         # Create and pack labels for each metric with headings
-        ctk.CTkLabel(self.left_frame, text="Complexity Metrics", font=TITLE_FONT).pack(side=tk.TOP, pady=(10, 50))
-        ctk.CTkLabel(self.left_frame, text=f"Processor: {processor}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP)
-        ctk.CTkLabel(self.left_frame, text=f"Number of Nodes: {num_nodes}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.left_frame, text=f"Number of edges in original graph: {len(edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.left_frame, text=f"Number of edges in MST: {len(mst_edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.left_frame, text=f"Algorithm Execution Time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.left_frame, text=f"Number of Comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Processor: {processor}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of Nodes: {num_nodes}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in original graph: {len(edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in MST: {len(mst_edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Algorithm Execution Time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of Comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
 
     
     def return_to_main_menu(self):

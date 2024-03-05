@@ -115,7 +115,7 @@ class MainMenu(ctk.CTk):
         # Create a Toplevel window
         info_window = ctk.CTkToplevel(self)
         info_window.title("What is Prim's Algorithm?")
-        info_window.geometry("500x300")  # Adjust size as needed
+        info_window.geometry("500x400")  # Adjust size as needed
 
         what_is_prims_width = 500
         what_is_prims_height = 400
