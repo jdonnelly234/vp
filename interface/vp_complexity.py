@@ -9,6 +9,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import platform
 import itertools
 
+
+
 from node import Node
 from edge import Edge
 from vp_complexity_gui import ComplexityGUI
@@ -28,45 +30,60 @@ class ComplexityAnalyser(ComplexityGUI):
 
         
     def analyse_comparisons(self):
-        num_nodes = int(self.comp_slider.get())
+        max_nodes = int(self.comp_slider.get())
+        steps = int(self.comp_steps_slider.get())
         # Clear previous graph and metrics
         self.clear_graph()
         self.clear_metrics()
 
-        # Generate a complete graph with the specified number of nodes
-        graph = self.generate_complete_graph(num_nodes)
+        nodes = list(range(2, max_nodes + 1, steps))  # Start from 2 to avoid graphs with less than 2 nodes
 
-        # Run Prim's algorithm on the generated graph
-        start_time = time.time()
-        minimum_spanning_tree, num_comparisons = prim_minimum_spanning_tree(graph)
-        end_time = time.time()
-        execution_time = end_time - start_time
+        nodes.append(max_nodes)
+        print(f"Steps: {steps}")
+        print(f"Nodes: {nodes}")
+        comparisons = []
 
-        # Display complexity metrics
-        self.display_complexity_metrics(num_nodes, self.edges, minimum_spanning_tree, execution_time, num_comparisons, self.processor)
+        for n in nodes:
+            graph = self.generate_complete_graph(n)
+            start_time = time.time()
+            _, num_comparisons = prim_minimum_spanning_tree(graph)
+            end_time = time.time()
+            comparisons.append(num_comparisons)
 
-        # Visualize the complexity
-        self.visualize_complexity(num_nodes)
+        print(f"Comparisons: {comparisons}")
+
+        execution_time = end_time - start_time  # This would be more meaningful if averaged over runs
+
+        # Display complexity metrics for the last measured node count, 
+        self.display_complexity_metrics(nodes[-1], self.edges, _, execution_time, comparisons[-1], self.processor)
+
+        # You might need to adjust the visualization function if it needs to handle varying numbers of nodes
+        self.visualize_complexity(nodes, comparisons)
 
 
     def analyse_execution_time(self):
-        num_nodes = int(self.exec_slider.get())  # Get the value from the execution time slider
+        max_nodes = int(self.exec_slider.get())  
+        steps = int(self.exec_steps_slider.get())
         # Clear previous graph and metrics
         self.clear_graph()
         self.clear_metrics()
 
+        nodes = list(range(2, max_nodes + 1, steps))  # Start from 2 to avoid graphs with less than 2 nodes
+        nodes.append(max_nodes)
+        print(f"Steps: {steps}")
+        print(f"Nodes: {nodes}")
         execution_times = []
-        nodes = list(range(2, num_nodes + 1))  # Start from 2 to avoid graphs with less than 2 nodes
-
+        
         for n in nodes:
             graph = self.generate_complete_graph(n)
             start_time = time.perf_counter()
             _, num_comparisons = prim_minimum_spanning_tree(graph)  # Ignore the result, just measure time
             end_time = time.perf_counter()
             execution_times.append(end_time - start_time)
+            print(f"Prim's execution time on graph with {n} nodes: {end_time - start_time} seconds")
         
         # Display complexity metrics
-        self.display_complexity_metrics(num_nodes, self.edges, _, execution_times[len(execution_times) - 1], num_comparisons, self.processor)
+        self.display_complexity_metrics(nodes[-1], self.edges, _, (execution_times[len(execution_times) - 1])/len(execution_times), num_comparisons, self.processor)
 
         self.visualize_execution_time(nodes, execution_times)
         
@@ -83,6 +100,8 @@ class ComplexityAnalyser(ComplexityGUI):
 
     def generate_complete_graph(self, num_nodes):
         # Reset to show correct number of nodes and comparisons on graph
+        print(f"Generating graph with {num_nodes} nodes")
+        start_time = time.time()
         self.node_counter = 0  
 
         # Pre-allocate nodes list with placeholder nodes 
@@ -93,51 +112,60 @@ class ComplexityAnalyser(ComplexityGUI):
             Edge(self.nodes[i], self.nodes[j], random.randint(1, 10))
             for i, j in itertools.combinations(range(num_nodes), 2)
         ]
-
+        end_time = time.time()
+        print(f"Time to generate graph with {num_nodes} nodes: {end_time - start_time} seconds")
         return extract_graph_data(self.nodes, self.edges)
     
     
-    def visualize_complexity(self, num_nodes):
-        comparisons = []  
-        nodes = list(range(2, num_nodes + 1))  
-
-        for n in nodes:
-            graph = self.generate_complete_graph(n)
-            _, num_comparisons = prim_minimum_spanning_tree(graph)
-            comparisons.append(num_comparisons)
-
-        nsquared = [n**2 for n in nodes]
-
-        # Create a Matplotlib figure and axis
+    def visualize_complexity(self, nodes, comparisons):
+        # Create a Matplotlib figure and axis for plotting
         fig = Figure(figsize=(10, 5))
         ax = fig.add_subplot(111)
 
-        ax.plot(nodes, comparisons, label='Prims Algorithm', color='red')
-        ax.plot(nodes, nsquared, linestyle='dashed', label="n^2")
+        print(f"Comaprisons in visualising complexity function: {comparisons}")
+        # Plot the number of comparisons against the number of nodes
+        ax.plot(nodes, comparisons, label='Your graph', color='red', marker='o')
+
+        # Optionally, plot theoretical complexity for comparison, e.g., O(n^2) or O(n log n), depending on the expected complexity
+        # For demonstration, plotting an n^2 complexity curve
+        nsquared = [n**2 for n in nodes]
+        ax.plot(nodes, nsquared, label='n^2 (Theoretical)', linestyle='--', color='blue')
+
+        # Labeling the plot
         ax.set_xlabel("Number of nodes")
         ax.set_ylabel("Number of comparisons")
-        ax.set_title(f"Time complexity of Prim's for a complete graph with {num_nodes} nodes")
-        ax.grid()
+        ax.set_title(f"Time complexity of Prim's for a complete graph with {int(self.comp_slider.get())} nodes")
+        ax.legend()
+        ax.grid(True)
 
-        # Embed the figure in the right frame
+        # Embed the figure in the right frame (assuming 'self.right_frame' is your designated area for plots)
         canvas = FigureCanvasTkAgg(fig, master=self.right_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
     
 
     def visualize_execution_time(self, nodes, execution_times):
-        # Create a new Matplotlib figure and axis
+        # Create a Matplotlib figure and axis for plotting
         fig = Figure(figsize=(10, 5))
         ax = fig.add_subplot(111)
 
-        ax.plot(nodes, execution_times, label='Execution Time', color='blue')
-        ax.set_xlabel("Number of nodes")
-        ax.set_ylabel("Execution time (seconds)")
-        ax.set_title("Execution time of Prim's algorithm")
-        ax.legend()
-        ax.grid()
+        print(f"Comaprisons in visualising complexity function: {execution_times}")
+        # Plot the number of comparisons against the number of nodes
+        ax.plot(nodes, execution_times, label='Your graph', color='red', marker='o')
 
-        # Embed the figure in the right frame
+        # Optionally, plot theoretical complexity for comparison, e.g., O(n^2) or O(n log n), depending on the expected complexity
+        # For demonstration, plotting an n^2 complexity curve
+        #nsquared = [n**2 for n in nodes]
+        #ax.plot(nodes, nsquared, label='n^2 (Theoretical)', linestyle='--', color='blue')
+
+        # Labeling the plot
+        ax.set_xlabel("Number of nodes")
+        ax.set_ylabel("Execution time (s)")
+        ax.set_title(f"Execution time of Prim's for a complete graph with {int(self.exec_slider.get())} nodes")
+        ax.legend()
+        ax.grid(True)
+
+        # Embed the figure in the right frame (assuming 'self.right_frame' is your designated area for plots)
         canvas = FigureCanvasTkAgg(fig, master=self.right_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)

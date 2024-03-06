@@ -45,21 +45,46 @@ class ComplexityGUI(ctk.CTk):
         self.comp_tab = self.parameter_tabview.add("No. of Comparisons")
         self.exec_tab = self.parameter_tabview.add("Execution Time")
 
-        self.comp_tab_node_title = ctk.CTkLabel(self.comp_tab, text="Use the slider to specify no. of nodes")
+        # Node selector for the number of nodes in comparisons tab
+        self.comp_tab_node_title = ctk.CTkLabel(self.comp_tab, text="Use the slider to specify no. of nodes:")
         self.comp_tab_node_title.pack(padx=(20))
-        self.comp_slider = ctk.CTkSlider(self.comp_tab, from_=10, to=250,number_of_steps=24, command=lambda value: self.update_slider_label(self.comp_slider_label, value))
+
+        self.comp_slider = ctk.CTkSlider(self.comp_tab, from_=100, to=2000,number_of_steps=19, command=lambda value: self.update_slider_label(self.comp_slider_label, value))
         self.comp_slider.pack(padx=(10))
-        self.comp_slider_label = ctk.CTkLabel(self.comp_tab, text="130")
+
+        self.comp_slider_label = ctk.CTkLabel(self.comp_tab, text="950")
         self.comp_slider_label.pack(padx=(10))
+
+        self.comp_slider.bind("<ButtonRelease-1>", lambda event, arg="comp": self.on_node_slider_change(arg, event))
+
+        # Step selector for the number of steps in comparisons tab
+        self.comp_tab_steps_title = ctk.CTkLabel(self.comp_tab, text="Specify the size of the step interval for the x axis:")
+        self.comp_tab_steps_title.pack(padx=(20))
+        self.comp_steps_slider = ctk.CTkSlider(self.comp_tab, from_=10, to=100,number_of_steps=10, command=lambda value: self.update_slider_label(self.comp_steps_slider_label, value))
+        self.comp_steps_slider.pack(padx=(10))
+        self.comp_steps_slider_label = ctk.CTkLabel(self.comp_tab, text="55")
+        self.comp_steps_slider_label.pack(padx=(10))
+
+        # Button to start the analysis in comparisons tab
         self.comp_tab_analyse_button = ctk.CTkButton(self.comp_tab, text="Analyse", command=self.analyse_comparisons)
         self.comp_tab_analyse_button.pack(padx=(30), pady = (30,10))
 
+
         self.exec_tab_node_title = ctk.CTkLabel(self.exec_tab, text="Use the slider to specify no. of nodes")
         self.exec_tab_node_title.pack(padx=(20))
-        self.exec_slider = ctk.CTkSlider(self.exec_tab, from_=100, to=10000, number_of_steps=50, command=lambda value: self.update_slider_label(self.exec_slider_label, value))
+        self.exec_slider = ctk.CTkSlider(self.exec_tab, from_=100, to=10000, number_of_steps=49, command=lambda value: self.update_slider_label(self.exec_slider_label, value))
         self.exec_slider.pack(padx=(10))
-        self.exec_slider_label = ctk.CTkLabel(self.exec_tab, text="8000")
+        self.exec_slider_label = ctk.CTkLabel(self.exec_tab, text="4950")
         self.exec_slider_label.pack(padx=(10))
+        self.exec_slider.bind("<ButtonRelease-1>", lambda event, arg="exec": self.on_node_slider_change(arg, event))
+
+        self.exec_tab_steps_title = ctk.CTkLabel(self.exec_tab, text="Specify the size of the step interval for the x axis:")
+        self.exec_tab_steps_title.pack(padx=(20))
+        self.exec_steps_slider = ctk.CTkSlider(self.exec_tab, from_=10, to=100,number_of_steps=10, command=lambda value: self.update_slider_label(self.exec_steps_slider_label, value))
+        self.exec_steps_slider.pack(padx=(10))
+        self.exec_steps_slider_label = ctk.CTkLabel(self.exec_tab, text="50")
+        self.exec_steps_slider_label.pack(padx=(10))
+
         self.exec_tab_analyse_button = ctk.CTkButton(self.exec_tab, text="Analyse", command=self.analyse_execution_time)
         self.exec_tab_analyse_button.pack(padx=(30), pady = 30)
 
@@ -73,6 +98,30 @@ class ComplexityGUI(ctk.CTk):
         return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
         return_button.grid(row = 8)
      
+
     def update_slider_label(self, label, value):
         # Update the specified slider label based on the slider's current value
         label.configure(text=str(int(value)))
+    
+
+    def on_node_slider_change(self, identifier, event=None):
+        if identifier == "comp":
+            max_nodes = int(self.comp_slider.get()) 
+            max_steps = max_nodes / 10
+            min_steps = max_nodes / 20
+
+            # Adjust the step slider's range. Assuming `self.step_slider` is your Tkinter Scale for steps
+            self.comp_steps_slider.configure(from_=min_steps, to=max_steps)
+
+            self.comp_steps_slider.set(max_steps - (min_steps / 2))
+            self.update_slider_label(self.comp_steps_slider_label, max_steps - (min_steps / 2))
+        elif identifier == "exec":
+            max_nodes = int(self.exec_slider.get()) 
+            max_steps = max_nodes / 5
+            min_steps = max_nodes / 10
+
+            # Adjust the step slider's range. Assuming `self.step_slider` is your Tkinter Scale for steps
+            self.exec_steps_slider.configure(from_=min_steps, to=max_steps)
+
+            self.exec_steps_slider.set(max_steps - (min_steps / 2))
+            self.update_slider_label(self.exec_steps_slider_label, max_steps - (min_steps / 2))
