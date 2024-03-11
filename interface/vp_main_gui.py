@@ -69,6 +69,7 @@ class MainMenu(ctk.CTk):
         self.main_title = ctk.CTkLabel(self.right_frame, text="Visualising Prim's", font=TITLE_FONT)
         self.main_title.grid(row=4, column=1, pady=10, sticky='ew')
 
+
     def launch_graph_visualiser(self):
         self.withdraw()
         visualiser = VisualisingPrims()
@@ -81,28 +82,61 @@ class MainMenu(ctk.CTk):
         complexity = ComplexityAnalyser()
         complexity.mainloop()
 
+
     def launch_help(self):
         # Create a Toplevel window for the help content
         help_window = ctk.CTkToplevel(self)
         help_window.title("Help")
-        help_window.geometry("500x300")  # Adjust size as needed
+        help_window.geometry("500x500") 
+
+        help_window_width = 500
+        help_window_height = 500
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        center_x = int((screen_width - help_window_width) / 2)
+        center_y = int((screen_height - help_window_height) / 2)
+
+        help_window.geometry(f'{help_window_width}x{help_window_height}+{center_x}+{center_y}')
 
         # Create the tab view within the new Toplevel window
         helpTab = ctk.CTkTabview(help_window)
 
-        # Add content to the tabs (example for one tab)
-        guide_tab = ctk.CTkFrame(helpTab)
-        faq_tab = ctk.CTkFrame(helpTab)
-        accessibility_tab = ctk.CTkFrame(helpTab)
+        guide_tab = helpTab.add("Guide")
+        faq_tab = helpTab.add("FAQ")
+        accessibility_tab = helpTab.add("Accessibility")
 
-        helpTab.add("Guide")
-        helpTab.add("FAQ")
-        helpTab.add("Accessibility")
+        # Guide tab
+        which_guide_text = ctk.CTkLabel(guide_tab, text="Select a guide:", font=COMPLEXITY_SUBTITLE_FONT)
+        which_guide_text.grid(row=0, column=0, padx=50, pady=20)
+        
+        guide_text = ctk.CTkLabel(guide_tab, text=VISUALISER_GUIDE_TEXT, wraplength=380, justify="left")
+        guide_text.grid(row=1, column=0, columnspan=2, padx=50, pady=10)
 
-        # Add content to each tab
-        ctk.CTkLabel(guide_tab, text="Guide content goes here...")
-        ctk.CTkLabel(faq_tab, text="FAQ content goes here...")
-        ctk.CTkLabel(accessibility_tab, text="Accessibility content goes here...")
+        def guide_text_decider(choice):
+            if choice == "Graph Visualiser":
+                guide_text.configure(text=VISUALISER_GUIDE_TEXT, wraplength=380)
+            elif choice == "Complexity Analyser":
+                guide_text.configure(text=COMPLEXITY_GUIDE_TEXT, wraplength=380, justify="left")
+                
+        
+        guide_selector = ctk.CTkComboBox(guide_tab, values=["Graph Visualiser", "Complexity Analyser"], width= 170, command = guide_text_decider)
+        guide_selector.grid(row=0, column=1, padx=50, pady=20)
+
+        # FAQ tab
+
+        # Accessibility tab
+        colour_scheme_label = ctk.CTkLabel(accessibility_tab, text="Colour Scheme", font=COMPLEXITY_SUBTITLE_FONT)
+        colour_scheme_label.grid(row=0, column=0, padx=50, pady=20)
+
+        colour_scheme_selector = ctk.CTkComboBox(accessibility_tab, values=["Light Mode", "Dark Mode", "High Contrast", "Deuteranopia", "Tritanopia"], width= 170)
+        colour_scheme_selector.grid(row=0, column=1, padx=50, pady=20)
+
+        
+
+        
+
 
         # Set the default tab to open
         helpTab.set("Guide")
@@ -112,10 +146,9 @@ class MainMenu(ctk.CTk):
 
     
     def launch_what_is_prims(self):
-        # Create a Toplevel window
         info_window = ctk.CTkToplevel(self)
         info_window.title("What is Prim's Algorithm?")
-        info_window.geometry("500x400")  # Adjust size as needed
+        info_window.geometry("500x400")  
 
         what_is_prims_width = 500
         what_is_prims_height = 400
@@ -139,21 +172,30 @@ class MainMenu(ctk.CTk):
 
         self.current_text_index = 0
 
-        # Add your information about Prim's algorithm here
-        self.info_label = ctk.CTkLabel(info_window, text="Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph. This means it finds a subset of the edges that forms a tree that includes every vertex, where the total weight of all the edges in the tree is minimized.", wraplength=380, justify="left")
+        self.info_label = ctk.CTkLabel(info_window, text="Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph. This means it finds a subset of the edges that forms a tree that includes every node, where the total weight of all the edges in the tree is minimized.", wraplength=380, justify="left")
         self.info_label.pack(pady=20, padx=20)
 
-        # Function to update the text
         def update_text(direction):
             self.current_text_index += direction
-            if self.current_text_index < 0:
-                self.current_text_index = 0  # Prevent going before the first text
-            elif self.current_text_index >= len(self.texts):
-                self.current_text_index = len(self.texts) - 1  # Prevent going past the last text
+            
+            # Disable the "Previous" button if on the first slide
+            if self.current_text_index <= 0:
+                self.current_text_index = 0
+                prev_button.configure(state="disabled")
+            else:
+                prev_button.configure(state="normal")
+            
+            # Disable the "Next" button if on the last slide
+            if self.current_text_index >= len(self.texts) - 1:
+                self.current_text_index = len(self.texts) - 1
+                next_button.configure(state="disabled")
+            else:
+                next_button.configure(state="normal")
+            
             self.info_label.configure(text=self.texts[self.current_text_index])
 
         # Next and Previous buttons
-        prev_button = ctk.CTkButton(info_window, text="Previous", command=lambda: update_text(-1))
+        prev_button = ctk.CTkButton(info_window, text="Previous", state="disabled", command=lambda: update_text(-1))
         prev_button.pack(side="left", padx=(50, 10), pady=20)
 
         next_button = ctk.CTkButton(info_window, text="Next", command=lambda: update_text(1))

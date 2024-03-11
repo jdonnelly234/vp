@@ -398,7 +398,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             messagebox.showerror("Import Error", str(e), parent=self)
         except Exception as e:
             messagebox.showerror("Import Error", f"An error occurred: {e}", parent=self)
-
+    
 
     ##########################################
     # All of below is for Prim's integration #

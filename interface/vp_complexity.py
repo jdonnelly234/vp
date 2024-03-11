@@ -9,8 +9,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import platform
 import itertools
 
-
-
 from node import Node
 from edge import Edge
 from vp_complexity_gui import ComplexityGUI
@@ -32,7 +30,7 @@ class ComplexityAnalyser(ComplexityGUI):
     def analyse_comparisons(self):
         max_nodes = int(self.comp_slider.get())
         steps = int(self.comp_steps_slider.get())
-        # Clear previous graph and metrics
+
         self.clear_graph()
         self.clear_metrics()
 
@@ -93,10 +91,12 @@ class ComplexityAnalyser(ComplexityGUI):
         for widget in self.right_frame.winfo_children():
             widget.destroy()
 
+
     def clear_metrics(self):
         # Clear complexity metrics within lower frame without destroying the frames themselves
         for widget in self.lower_left_frame.winfo_children():
             widget.destroy()
+
 
     def generate_complete_graph(self, num_nodes):
         # Reset to show correct number of nodes and comparisons on graph
@@ -112,6 +112,7 @@ class ComplexityAnalyser(ComplexityGUI):
             Edge(self.nodes[i], self.nodes[j], random.randint(1, 10))
             for i, j in itertools.combinations(range(num_nodes), 2)
         ]
+
         end_time = time.time()
         print(f"Time to generate graph with {num_nodes} nodes: {end_time - start_time} seconds")
         return extract_graph_data(self.nodes, self.edges)
@@ -133,7 +134,10 @@ class ComplexityAnalyser(ComplexityGUI):
 
         # Labeling the plot
         ax.set_xlabel("Number of nodes")
-        ax.set_ylabel("Number of comparisons")
+        if comparisons[len(comparisons) - 1] > 1000000:
+            ax.set_ylabel("Number of comparisons (millions)")
+        else:
+            ax.set_ylabel("Number of comparisons")
         ax.set_title(f"Time complexity of Prim's for a complete graph with {int(self.comp_slider.get())} nodes")
         ax.legend()
         ax.grid(True)
