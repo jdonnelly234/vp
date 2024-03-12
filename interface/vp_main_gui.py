@@ -121,16 +121,16 @@ class MainMenu(ctk.CTk):
                 guide_text.configure(text=COMPLEXITY_GUIDE_TEXT, wraplength=380, justify="left")
                 
         
-        guide_selector = ctk.CTkComboBox(guide_tab, values=["Graph Visualiser", "Complexity Analyser"], width= 170, command = guide_text_decider)
+        guide_selector = ctk.CTkComboBox(guide_tab, values=["Graph Visualiser", "Complexity Analyser"], width= 170, command = guide_text_decider, state="readonly")
         guide_selector.grid(row=0, column=1, padx=50, pady=20)
-
+        guide_selector.set("Graph Visualiser")
         # FAQ tab
 
         # Accessibility tab
         colour_scheme_label = ctk.CTkLabel(accessibility_tab, text="Colour Scheme", font=COMPLEXITY_SUBTITLE_FONT)
         colour_scheme_label.grid(row=0, column=0, padx=50, pady=20)
 
-        colour_scheme_selector = ctk.CTkComboBox(accessibility_tab, values=["Light Mode", "Dark Mode", "High Contrast", "Deuteranopia", "Tritanopia"], width= 170)
+        colour_scheme_selector = ctk.CTkComboBox(accessibility_tab, values=["Light Mode", "Dark Mode", "High Contrast", "Deuteranopia", "Tritanopia"], width= 170, state="readonly")
         colour_scheme_selector.grid(row=0, column=1, padx=50, pady=20)
 
         

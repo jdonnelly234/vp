@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import platform
 import itertools
+import numpy as np
 
 from node import Node
 from edge import Edge
@@ -16,6 +17,7 @@ from utils import *
 from config import *
 
 from vp_prims_algorithm import prim_minimum_spanning_tree
+from vp_priority_q_prims import prim_minimum_spanning_tree_with_priority_queue
 
 class ComplexityAnalyser(ComplexityGUI):
     def __init__(self):
@@ -75,7 +77,7 @@ class ComplexityAnalyser(ComplexityGUI):
         for n in nodes:
             graph = self.generate_complete_graph(n)
             start_time = time.perf_counter()
-            _, num_comparisons = prim_minimum_spanning_tree(graph)  # Ignore the result, just measure time
+            _, num_comparisons = prim_minimum_spanning_tree_with_priority_queue(graph)  # Ignore the result, just measure time
             end_time = time.perf_counter()
             execution_times.append(end_time - start_time)
             print(f"Prim's execution time on graph with {n} nodes: {end_time - start_time} seconds")
@@ -99,23 +101,20 @@ class ComplexityAnalyser(ComplexityGUI):
 
 
     def generate_complete_graph(self, num_nodes):
-        # Reset to show correct number of nodes and comparisons on graph
-        print(f"Generating graph with {num_nodes} nodes")
         start_time = time.time()
-        self.node_counter = 0  
+        print(f"Generating graph with {num_nodes} nodes...")
 
-        # Pre-allocate nodes list with placeholder nodes 
-        self.nodes = [Node(0, 0, generate_node_identifier(i)) for i in range(num_nodes)]
+        nodes = [generate_node_identifier(i) for i in range(num_nodes)]
+        edges = list(itertools.combinations(nodes, 2))
+        weights = np.random.randint(1, 11, size=len(edges))
 
-        # Pre-allocate edges list and fill it using list comprehension
-        self.edges = [
-            Edge(self.nodes[i], self.nodes[j], random.randint(1, 10))
-            for i, j in itertools.combinations(range(num_nodes), 2)
-        ]
+        # Combine nodes and weights
+        E = {(start, end): weight for (start, end), weight in zip(edges, weights)}        
 
         end_time = time.time()
         print(f"Time to generate graph with {num_nodes} nodes: {end_time - start_time} seconds")
-        return extract_graph_data(self.nodes, self.edges)
+        
+        return nodes, edges, E
     
     
     def visualize_complexity(self, nodes, comparisons):
@@ -134,8 +133,8 @@ class ComplexityAnalyser(ComplexityGUI):
 
         # Labeling the plot
         ax.set_xlabel("Number of nodes")
-        if comparisons[len(comparisons) - 1] > 1000000:
-            ax.set_ylabel("Number of comparisons (millions)")
+        if comparisons[len(comparisons) - 1] > 900000:
+            ax.set_ylabel("Number of comparisons (million)")
         else:
             ax.set_ylabel("Number of comparisons")
         ax.set_title(f"Time complexity of Prim's for a complete graph with {int(self.comp_slider.get())} nodes")
@@ -153,7 +152,7 @@ class ComplexityAnalyser(ComplexityGUI):
         fig = Figure(figsize=(10, 5))
         ax = fig.add_subplot(111)
 
-        print(f"Comaprisons in visualising complexity function: {execution_times}")
+        print(f"Execution times: {execution_times}")
         # Plot the number of comparisons against the number of nodes
         ax.plot(nodes, execution_times, label='Your graph', color='red', marker='o')
 
