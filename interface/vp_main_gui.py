@@ -37,7 +37,7 @@ class MainMenu(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         # Create left and right frames
-        self.left_frame = ctk.CTkFrame(self, corner_radius=50, fg_color="#427BD2", background_corner_colors=["#427BD2", "#252424", "#252424", "#427BD2"], bg_color="transparent")
+        self.left_frame = ctk.CTkFrame(self, corner_radius=50, fg_color=BUTTON_FG_COLOR, background_corner_colors=[BUTTON_FG_COLOR, "#252424", "#252424", BUTTON_FG_COLOR], bg_color="transparent")
         self.left_frame.grid(row=0, column=0, sticky='nsew')  
 
         self.right_frame = ctk.CTkFrame(self, corner_radius=0, bg_color="transparent", fg_color="transparent")
@@ -51,22 +51,22 @@ class MainMenu(ctk.CTk):
         self.right_frame.grid_columnconfigure(2, weight=1)
 
         # Create and place buttons in the right frame
-        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Prim's Visualiser", command=self.launch_graph_visualiser)
+        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Prim's Visualiser", command=self.launch_graph_visualiser, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.graph_visualiser_button.grid(row=8, column=1, sticky='ew')
 
-        self.complexity_analyser_button = ctk.CTkButton(self.right_frame, text="Complexity Analyser", command=self.launch_complexity_analyser)
+        self.complexity_analyser_button = ctk.CTkButton(self.right_frame, text="Complexity Analyser", command=self.launch_complexity_analyser, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.complexity_analyser_button.grid(row=9, column=1, sticky='ew')
 
-        self.what_is_prims_button = ctk.CTkButton(self.right_frame, text="What is Prim's?", command=self.launch_what_is_prims)
+        self.what_is_prims_button = ctk.CTkButton(self.right_frame, text="What is Prim's?", command=self.launch_what_is_prims, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.what_is_prims_button.grid(row=10, column=1, sticky='ew')
 
-        self.help_button = ctk.CTkButton(self.right_frame, text="Help", command=self.launch_help)
+        self.help_button = ctk.CTkButton(self.right_frame, text="Help", command=self.launch_help, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.help_button.grid(row=11, column=1, sticky='ew')
 
-        self.exit_button = ctk.CTkButton(self.right_frame, text="Exit", command=self.launch_exit)
+        self.exit_button = ctk.CTkButton(self.right_frame, text="Exit", command=self.launch_exit, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.exit_button.grid(row=12, column=1, sticky='ew')
 
-        self.main_title = ctk.CTkLabel(self.right_frame, text="Visualising Prim's", font=TITLE_FONT)
+        self.main_title = ctk.CTkLabel(self.right_frame, text="Visualising Prim's", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.main_title.grid(row=4, column=1, pady=10, sticky='ew')
 
 

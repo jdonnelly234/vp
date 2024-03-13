@@ -1,17 +1,15 @@
 # config.py
 
-# Color configurations
-FRAME_FG_COLOR = "#2b2828"
-FRAME_BG_COLOR = "#2b2828"
-CANVAS_BG_COLOR = "white"
-
 # Window configurations
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
 
 # Heading font
 TITLE_FONT = ("Helvetica", 20, "bold")
+TITLE_COLOUR = "white"
 COMPLEXITY_SUBTITLE_FONT = ("Helvetica", 14)
+COMPLEXITY_PLACEHOLDER_FONT = ("Helvetica", 14, "italic")
+COMPLEXITY_PLACEHOLDER_COLOUR = "grey"
 
 VISUALISER_GUIDE_TEXT = ["The graph visualiser allows you to construct the minimum spanning tree (MST) of a graph in an iterative manner using Prim's algorithm. You can create, generate or import a graph directly through the user interface using the menus, buttons and drawable canvas in the centre of the screen.\n\n"
                         + "1. Click the middle canvas to create new nodes.\n\n"
@@ -26,3 +24,12 @@ COMPLEXITY_GUIDE_TEXT = ["The complexity analyser allows you to see the time com
                          + "3. Click the Analyse button to start the analysis.\n"
                          + "4. The generated chart will display the time complexity of Prim's algorithm for the complete graph. Complexity data will be displayed below the sliders.\n"
                          + "5. Change the slider parameters and click the Analyse button again to see how the time complexity and complexity metrics change."]
+
+
+# Color configurations
+FRAME_FG_COLOR = "#2b2828"
+FRAME_BG_COLOR = "#2b2828"
+CANVAS_BG_COLOR = "white"
+BUTTON_FG_COLOR = "#4D85AC"
+BUTTON_BG_COLOR = FRAME_FG_COLOR
+ANALYSER_FRAME_COLOR = "#464141"

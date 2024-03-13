@@ -19,13 +19,12 @@ class GraphVisualiserGUI(ctk.CTk):
         center_x = int((screen_width - WINDOW_WIDTH) / 2)
         center_y = int((screen_height - WINDOW_HEIGHT) / 2)
 
+        self.top_margin = 58
         # Set the position of the window to the center of the screen
         self.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{center_x}+{center_y}')
 
         # Minimum size for the window to avoid issues with resizing
         self.minsize(WINDOW_WIDTH, WINDOW_HEIGHT) 
-
-        self.top_margin = 50  # Margin to prevent nodes from being placed behind the status label
 
         # Frames for different sections
         self.left_frame = ctk.CTkFrame(self, width=200, fg_color=FRAME_FG_COLOR, corner_radius=0)
@@ -35,23 +34,28 @@ class GraphVisualiserGUI(ctk.CTk):
         self.right_frame.grid(row=0, column=2, sticky='ns', rowspan=8, columnspan=2)
 
         self.canvas_frame = ctk.CTkFrame(self, width=624, height=768, fg_color=FRAME_FG_COLOR, corner_radius=10, bg_color=FRAME_BG_COLOR)
-        self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)
+        self.canvas_frame.grid(row=0, column=1, sticky='nsew', rowspan=8)  # Start the canvas_frame at row 1 to leave room for the status_frame
 
-        self.status_frame = ctk.CTkFrame(self, width=200)
-        self.status_frame.grid(row=0, column=0, pady=12, padx=50, columnspan=4, sticky='n')
+        self.status_frame = ctk.CTkFrame(self, height=50, fg_color=FRAME_BG_COLOR, corner_radius=10, bg_color=FRAME_BG_COLOR)
+        self.status_frame.grid(row=0, column=1, sticky='new', padx=10, pady=0)  # Adjust padx and pady accordingly
+
+        # Configure column 1 to be stretchable so it can expand to fill the space
+        self.columnconfigure(1, weight=1)
+
+        self.grid_rowconfigure(0, minsize=10)
 
 
         # Headings for UI sections 
-        self.upper_left_frame_title = ctk.CTkLabel(self.left_frame, text="Create an edge", font=TITLE_FONT)
+        self.upper_left_frame_title = ctk.CTkLabel(self.left_frame, text="Create an edge", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.upper_left_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='w')
 
-        self.middle_left_frame_title = ctk.CTkLabel(self.left_frame, text="Delete a node or edge", font=TITLE_FONT)
+        self.middle_left_frame_title = ctk.CTkLabel(self.left_frame, text="Delete a node or edge", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.middle_left_frame_title.grid(row=5, column=0, pady=10, padx=10, sticky='w')
 
-        self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="Other features", font=TITLE_FONT)
+        self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="Other features", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.lower_left_frame_title.grid(row=8, column=0, pady=10, padx=10, sticky='w')
 
-        self.right_frame_title = ctk.CTkLabel(self.right_frame, text="Run Prim's algorithm", font=TITLE_FONT)
+        self.right_frame_title = ctk.CTkLabel(self.right_frame, text="Run Prim's algorithm", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.right_frame_title.grid(row=0, column=0, pady=10, padx=10, sticky='ew', columnspan=2)
 
 
@@ -69,77 +73,81 @@ class GraphVisualiserGUI(ctk.CTk):
         self.delete_edge_var = StringVar(self)
         
         default_option = "Add nodes to see them here"
+
         # Dropdown menus 
-        self.start_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.start_node_var, values=[default_option], width=60)
+        self.start_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.start_node_var, values=[default_option], width=60, fg_color=BUTTON_FG_COLOR)
         self.start_node_menu.grid(row=1, column=0, pady=5, padx=10, sticky='e')
 
-        self.end_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.end_node_var, values=[default_option], width=60)
+        self.end_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.end_node_var, values=[default_option], width=60, fg_color=BUTTON_FG_COLOR)
         self.end_node_menu.grid(row=2, column=0, pady=5, padx=10, sticky='e')
 
-        self.delete_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_node_var, values=[default_option], width=80)
+        self.delete_node_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_node_var, values=[default_option], width=80, fg_color=BUTTON_FG_COLOR)
         self.delete_node_menu.grid(row=6, column=0, pady=10, padx=10, sticky='w')
 
         self.delete_edge_var.set("   ") # Default value
-        self.delete_edge_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_edge_var, values=[default_option], width=80)
+        self.delete_edge_menu = ctk.CTkOptionMenu(self.left_frame, variable=self.delete_edge_var, values=[default_option], width=80, fg_color=BUTTON_FG_COLOR)
         self.delete_edge_menu.grid(row=7, column=0, pady=10, padx=10, sticky='w')
 
-        self.start_vertex_menu = ctk.CTkOptionMenu(self.right_frame, variable=self.start_vertex_var, values=[default_option], width=85, dynamic_resizing=False)
+        self.start_vertex_menu = ctk.CTkOptionMenu(self.right_frame, variable=self.start_vertex_var, values=[default_option], width=85, dynamic_resizing=False, fg_color=BUTTON_FG_COLOR)
         self.start_vertex_menu.grid(row=1, column=1, pady=10, padx=(1,10), sticky='e')
         self.start_vertex_var.set("Source")  # Default value
 
 
         # Weight entry field
-        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var, width=60)
+        self.weight_entry = ctk.CTkEntry(self, textvariable=self.weight_var, width=60, fg_color=FRAME_FG_COLOR, bg_color=FRAME_BG_COLOR)
         self.weight_entry.grid(in_=self.left_frame, row=3, column=0, pady=10, padx=10, sticky='e')
 
 
         # Labels for the dropdown menus and weight input and status label
-        self.start_node_label = ctk.CTkLabel(self, text="Start Node")
+        self.start_node_label = ctk.CTkLabel(self, text="Start Node:", font=("Helvetica", 14), fg_color=FRAME_FG_COLOR, bg_color=FRAME_BG_COLOR, text_color=TITLE_COLOUR)
         self.start_node_label.grid(in_=self.left_frame, row=1, column=0, sticky='w', padx=10, pady=10)
 
-        self.end_node_label = ctk.CTkLabel(self, text="End Node")
+        self.end_node_label = ctk.CTkLabel(self, text="End Node:", font=("Helvetica", 14), fg_color=FRAME_FG_COLOR, bg_color=FRAME_BG_COLOR, text_color=TITLE_COLOUR)
         self.end_node_label.grid(in_=self.left_frame, row=2, column=0, sticky='w', padx=10)
 
-        self.weight_label = ctk.CTkLabel(self, text="Weight", fg_color="#302c2c")
+        self.weight_label = ctk.CTkLabel(self, text="Weight:", font=("Helvetica", 14), fg_color=FRAME_FG_COLOR, bg_color=FRAME_BG_COLOR, text_color=TITLE_COLOUR)
         self.weight_label.grid(in_=self.left_frame, row=3, column=0, sticky='w', padx=10)
 
-        self.status_label = ctk.CTkLabel(self.status_frame, text="Graph Drawing Mode", font=("Calibri", 12, "italic"))
-        self.status_label.pack(pady=1, padx=1)  # Use pack to add padding inside the frame
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Welcome to the Visualising Prim's graph visualiser.", font=("Helvetica", 14, "italic"), text_color=TITLE_COLOUR)
+        self.status_label.place(relx=0.5, rely=0.5, relheight=1, anchor='center') 
         
 
         # Buttons
-        self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge)
+        self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.create_edge_button.grid(in_=self.left_frame, row=4, column=0, pady=10, padx=10, sticky='ew')
 
-        self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst)
+        self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.finalize_button.grid(in_=self.right_frame, row=1, column=0, pady=10, padx=10, sticky='ew')
 
-        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset)
+        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.reset_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='ew')
 
-        self.random_graph_button = ctk.CTkButton(self, text="Generate a graph", command=self.generate_graph_dialog)
+        self.random_graph_button = ctk.CTkButton(self, text="Generate a graph", command=self.generate_graph_dialog, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.random_graph_button.grid(in_=self.left_frame, row=9, column=0, pady=10, padx=10, sticky='ew')
 
-        self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node, width=20)
+        self.delete_node_button = ctk.CTkButton(self.left_frame, text="Delete Node", command=self.delete_node, width=20, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.delete_node_button.grid(row=6, column=0, pady=10, padx=10, sticky='e')
 
-        self.delete_edge_button = ctk.CTkButton(self.left_frame, text="Delete Edge", command=self.delete_edge, width = 20)
+        self.delete_edge_button = ctk.CTkButton(self.left_frame, text="Delete Edge", command=self.delete_edge, width = 20, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.delete_edge_button.grid(row=7, column=0, pady=10, padx=10, sticky='e')
 
-        self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step)
+        self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.next_step_button.grid(in_=self.right_frame, row=4, pady=20, columnspan = 2)
         self.next_step_button.configure(state='disabled')  # Disabled by default, enabled when Prim's starts
 
-        self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view)
+        self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.toggle_mst_button.grid(row=5, pady=10, columnspan = 2)
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
 
-        self.import_graph_button = ctk.CTkButton(self, text="Import Graph", width=20, command=self.import_graph)
-        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='ew')
+        self.import_graph_button = ctk.CTkButton(self, text="Import", width=30, command=self.import_graph, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='w')
+
+        self.export_graph_button = ctk.CTkButton(self, text="Export", width=30, command=self.import_graph, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.export_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='e')
 
         # Button to return to the main menu
-        self.return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu)
-        self.return_button.grid(row=12, column=0, pady=10, padx=10, sticky='ew')  # Adjust grid row and column accordingly
+        self.return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color="orange", bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.return_button.grid(row=14, column=0, pady=10, padx=10, sticky='ew')  # Adjust grid row and column accordingly
 
         # Text widget to display Prim's algorithm steps
         self.info_text_widget = ctk.CTkTextbox(self, height=500, width=300)
@@ -152,7 +160,7 @@ class GraphVisualiserGUI(ctk.CTk):
             self.canvas.winfo_height() / 2,
             text="Click on the canvas to create a node.",
             fill="#bbbbbb",  # Light grey color
-            font=("TkDefaultFont", 18, "italic"),
+            font=("Helvetica", 18, "italic"),
             state="normal"  # Starts with the text shown
         )
 

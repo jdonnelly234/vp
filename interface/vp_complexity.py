@@ -24,7 +24,6 @@ class ComplexityAnalyser(ComplexityGUI):
         super().__init__()
 
         self.nodes = []  # List to store nodes
-        self.edges = []  # List to store edges
         self.node_counter = 0  # Counter to keep track of the number of nodes
         self.processor = platform.processor()
 
@@ -55,7 +54,7 @@ class ComplexityAnalyser(ComplexityGUI):
         execution_time = end_time - start_time  # This would be more meaningful if averaged over runs
 
         # Display complexity metrics for the last measured node count, 
-        self.display_complexity_metrics(nodes[-1], self.edges, _, execution_time, comparisons[-1], self.processor)
+        self.display_complexity_metrics(nodes[-1], int((nodes[-1] * (nodes[-1] - 1)) / 2) , _, execution_time, comparisons[-1], self.processor)
 
         # You might need to adjust the visualization function if it needs to handle varying numbers of nodes
         self.visualize_complexity(nodes, comparisons)
@@ -83,7 +82,7 @@ class ComplexityAnalyser(ComplexityGUI):
             print(f"Prim's execution time on graph with {n} nodes: {end_time - start_time} seconds")
         
         # Display complexity metrics
-        self.display_complexity_metrics(nodes[-1], self.edges, _, (execution_times[len(execution_times) - 1])/len(execution_times), num_comparisons, self.processor)
+        self.display_complexity_metrics(nodes[-1], int((nodes[-1] * (nodes[-1] - 1)) / 2), _, (execution_times[len(execution_times) - 1])/len(execution_times), num_comparisons, self.processor)
 
         self.visualize_execution_time(nodes, execution_times)
         
@@ -176,12 +175,11 @@ class ComplexityAnalyser(ComplexityGUI):
 
     def display_complexity_metrics(self, num_nodes, edges, mst_edges, execution_time, num_comparisons, processor):
         # Create and pack labels for each metric with headings
-        ctk.CTkLabel(self.lower_left_frame, text=f"Processor: {processor}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP)
-        ctk.CTkLabel(self.lower_left_frame, text=f"Number of Nodes: {num_nodes}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in original graph: {len(edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in MST: {len(mst_edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.lower_left_frame, text=f"Average Algorithm Execution Time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
-        ctk.CTkLabel(self.lower_left_frame, text=f"Number of Comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Maximum number of nodes specified: {num_nodes}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in max node graph: {edges}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of edges in MST of max node graph: {len(mst_edges)}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Average Prim's execution time: {execution_time:.6f} seconds", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
+        ctk.CTkLabel(self.lower_left_frame, text=f"Number of comparisons: {num_comparisons}", font = COMPLEXITY_SUBTITLE_FONT, anchor='center').pack(side=tk.TOP, fill=tk.X)
 
     
     def return_to_main_menu(self):

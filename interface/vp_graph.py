@@ -111,8 +111,13 @@ class VisualisingPrims(GraphVisualiserGUI):
         try:
             start_node_identifier = self.start_node_var.get()  # Get the identifier of the start node
             end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
-            weight = int(self.weight_var.get())  # This might throw ValueError if not a valid float
+            weight_input = self.weight_var.get() # This might throw ValueError if not a valid float
 
+            # Attempt to convert weight to an integer and validate it wasn't a float in disguise
+            if "." in weight_input or not weight_input.isdigit():
+                raise ValueError("Weight must be an integer.")
+            
+            weight = int(weight_input)
             start_node = next((node for node in self.nodes if node.identifier == start_node_identifier), None)
             end_node = next((node for node in self.nodes if node.identifier == end_node_identifier), None)
 
@@ -122,7 +127,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             if start_node == end_node:
                 raise ValueError("Start node and end node cannot be the same.")
             
-            if weight < 1 or weight > 99 or not isinstance(weight, int):
+            if weight < 1 or weight > 99:
                 raise ValueError("Weight must be a positive integer greater than 0 and less than 100.")
             
             if (start_node.identifier, end_node.identifier) in [(edge.start_node.identifier, edge.end_node.identifier) for edge in self.edges]:
@@ -138,6 +143,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.toggle_mst_button.configure(state='disabled', text='Show MST only')  # Disabled if canvas is clicked during Prim's
             self.default_dropdown_labels()  # Reset the dropdown menus and weight entry field
             self.unhide_edges()
+            self.status_label.configure(text=f"Edge {start_node_identifier} - {end_node_identifier} has been created with weight {weight}.")
             
         except ValueError as e:
             print(f"Error creating edge: {e}")
@@ -491,6 +497,9 @@ class VisualisingPrims(GraphVisualiserGUI):
 
             if len(self.nodes) == 0:
                 raise ValueError("Please add nodes and edges to the canvas.")
+            
+            if len(self.nodes) == 1:
+                raise ValueError("Please add more than one node to the canvas.")
             
             self.reset_node_and_edge_colors()  # Reset colors of nodes and edges
             self.unhide_edges()  # Unhide all edges if they were hidden from previous Prim's run
