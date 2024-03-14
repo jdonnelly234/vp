@@ -8,6 +8,8 @@ from edge import Edge
 from vp_graph_gui import GraphVisualiserGUI
 from utils import *
 from config import *
+from PIL import ImageGrab
+import sys
 
 # Visualising Prim's main graph application class
 class VisualisingPrims(GraphVisualiserGUI):
@@ -68,8 +70,10 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.unhide_edges()
 
             # If no nodes are left, show placeholder text
-            if not self.nodes:
+            if self.nodes == 0:
                 self.show_placeholder_text()
+                self.canvas_screenshot_button.configure(state='disabled')  # Start as disabled
+
 
 
     # For creating an edge between two nodes
@@ -240,6 +244,8 @@ class VisualisingPrims(GraphVisualiserGUI):
         clicked_node = self.find_node(x, y)
         self.hide_placeholder_text()   # Hide the placeholder text
         self.reset_button.configure(state='normal') # Enable "Reset Graph" button when canvas is clicked and node is added
+        self.canvas_screenshot_button.configure(state='normal')  
+
         self.status_label.configure(text="Graph Drawing Mode")
 
         if clicked_node:
@@ -404,6 +410,63 @@ class VisualisingPrims(GraphVisualiserGUI):
             messagebox.showerror("Import Error", str(e), parent=self)
         except Exception as e:
             messagebox.showerror("Import Error", f"An error occurred: {e}", parent=self)
+    
+    def export_graph_to_json(self):
+        if self.nodes == []:
+            messagebox.showinfo("Export failed", "Canvas is empty. Please create a graph first.")
+            self.status_label.configure(text="Click the canvas to create nodes, then use the left menus to create edges.")
+            return
+        graph_data = {
+            "nodes": [{"id": node.identifier, "x": node.x, "y": node.y} for node in self.nodes],
+            "edges": [{"start": edge.start_node.identifier, "end": edge.end_node.identifier, "weight": edge.weight} for edge in self.edges]
+        }
+        # Convert the dictionary to a JSON string
+        graph_json = json.dumps(graph_data, indent=4)
+        
+        # Ask the user where to save the file
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            title="Save your graph as JSON"
+        )
+
+        if file_path:  # If the user didn't cancel the dialog
+            # Write the JSON data to the selected file
+            with open(file_path, 'w') as file:
+                file.write(graph_json)
+            self.status_label.configure(text=f"Graph saved as {file_path}")
+        else:
+            self.status_label.configure(text="Graph export cancelled.")
+    
+   
+
+    def screenshot_canvas(self):
+        self.update_idletasks()  # Update the window layout
+        self.update()  # Refresh the entire window to ensure it is drawn
+
+        # Ask the user for a file name
+        file_name = filedialog.asksaveasfilename(defaultextension=".png",
+                                                filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg"), ("All files", "*.*")],
+                                                title="Save screenshot as...")
+        if not file_name:  # User cancelled the operation
+            return
+        
+        print("Canvas width: " + str(self.canvas_frame.winfo_width()))
+        print("Canvas height: " + str(self.canvas_frame.winfo_height()))
+
+        # Get the window ID (this works on Windows as well as on X11-based systems like most Linux distributions)
+        window_id = self.winfo_id()
+
+        
+        x0 = self.canvas_frame.winfo_rootx()            # 58 is to cut off error messaging box
+        y0 = self.canvas_frame.winfo_rooty() + 58
+        x1 = x0 + self.canvas_frame.winfo_width()
+        y1 = y0 + self.canvas_frame.winfo_height() - 58
+        bbox = (x0, y0, x1, y1)
+
+        screenshot = ImageGrab.grab(bbox=bbox)
+        screenshot.save(file_name)
+        messagebox.showinfo("Screenshot Saved", f"Screenshot saved to {file_name}")
     
 
     ##########################################

@@ -116,12 +116,6 @@ class GraphVisualiserGUI(ctk.CTk):
         self.create_edge_button = ctk.CTkButton(self, text="Create Edge", command=self.manual_create_edge, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.create_edge_button.grid(in_=self.left_frame, row=4, column=0, pady=10, padx=10, sticky='ew')
 
-        self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        self.finalize_button.grid(in_=self.right_frame, row=1, column=0, pady=10, padx=10, sticky='ew')
-
-        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        self.reset_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='ew')
-
         self.random_graph_button = ctk.CTkButton(self, text="Generate a graph", command=self.generate_graph_dialog, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.random_graph_button.grid(in_=self.left_frame, row=9, column=0, pady=10, padx=10, sticky='ew')
 
@@ -131,6 +125,25 @@ class GraphVisualiserGUI(ctk.CTk):
         self.delete_edge_button = ctk.CTkButton(self.left_frame, text="Delete Edge", command=self.delete_edge, width = 20, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.delete_edge_button.grid(row=7, column=0, pady=10, padx=10, sticky='e')
 
+        self.canvas_screenshot_button = ctk.CTkButton(self.left_frame, text="Screenshot Canvas", command=self.screenshot_canvas, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.canvas_screenshot_button.grid(row=10, pady=10, padx = 10, sticky='ew')
+        self.canvas_screenshot_button.configure(state='disabled')  # Start as disabled
+
+        self.import_graph_button = ctk.CTkButton(self, text="Import", width=100, command=self.import_graph, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.import_graph_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='w')
+
+        self.export_graph_button = ctk.CTkButton(self, text="Export", width=100, command=self.export_graph_to_json, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.export_graph_button.grid(in_=self.left_frame, row=11, column=0, pady=10, padx=10, sticky='e')
+
+        self.reset_button = ctk.CTkButton(self, text="Reset Graph", state="disabled", hover_color="#FF0000", command=self.confirm_reset, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.reset_button.grid(in_=self.left_frame, row=12, column=0, pady=10, padx=10, sticky='ew')
+
+        self.return_button = ctk.CTkButton(self.left_frame, width=100, text="Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color="orange", bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.return_button.grid(row=14, column=0, pady=150, padx=10, sticky='w')  # Adjust grid row and column accordingly
+
+        self.finalize_button = ctk.CTkButton(self, text="Run Prim's", command=self.generate_mst, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.finalize_button.grid(in_=self.right_frame, row=1, column=0, pady=10, padx=10, sticky='ew')
+
         self.next_step_button = ctk.CTkButton(self, text="Next Step", command=self.next_step, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.next_step_button.grid(in_=self.right_frame, row=4, pady=20, columnspan = 2)
         self.next_step_button.configure(state='disabled')  # Disabled by default, enabled when Prim's starts
@@ -138,16 +151,6 @@ class GraphVisualiserGUI(ctk.CTk):
         self.toggle_mst_button = ctk.CTkButton(self.right_frame, text="Show MST only", command=self.toggle_mst_view, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.toggle_mst_button.grid(row=5, pady=10, columnspan = 2)
         self.toggle_mst_button.configure(state='disabled')  # Start as disabled
-
-        self.import_graph_button = ctk.CTkButton(self, text="Import", width=30, command=self.import_graph, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        self.import_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='w')
-
-        self.export_graph_button = ctk.CTkButton(self, text="Export", width=30, command=self.import_graph, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        self.export_graph_button.grid(in_=self.left_frame, row=10, column=0, pady=10, padx=10, sticky='e')
-
-        # Button to return to the main menu
-        self.return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color="orange", bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        self.return_button.grid(row=14, column=0, pady=10, padx=10, sticky='ew')  # Adjust grid row and column accordingly
 
         # Text widget to display Prim's algorithm steps
         self.info_text_widget = ctk.CTkTextbox(self, height=500, width=300)
