@@ -21,6 +21,9 @@ class VisualisingPrims(GraphVisualiserGUI):
         self.drag_start_pos = None  # For storing the starting position of the drag for left_click_handler
         self.node_counter = 0  # Counter to keep track of the number of nodes
 
+        # Bind the Configure event to handle canvas resizes
+        self.canvas.bind("<Configure>", self.on_canvas_resize)
+
         # Bind mouse events
         self.canvas.bind("<Button-1>", self.left_click_handler)
         self.canvas.bind("<B1-Motion>", self.drag_handler)
@@ -117,8 +120,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             end_node_identifier = self.end_node_var.get()  # Get the identifier of the end node
             weight_input = self.weight_var.get() # This might throw ValueError if not a valid float
 
-            # Attempt to convert weight to an integer and validate it wasn't a float in disguise
-            if "." in weight_input or not weight_input.isdigit():
+            if "." in weight_input or not weight_input.isnumeric():
                 raise ValueError("Weight must be an integer.")
             
             weight = int(weight_input)
@@ -411,6 +413,7 @@ class VisualisingPrims(GraphVisualiserGUI):
         except Exception as e:
             messagebox.showerror("Import Error", f"An error occurred: {e}", parent=self)
     
+
     def export_graph_to_json(self):
         if self.nodes == []:
             messagebox.showinfo("Export failed", "Canvas is empty. Please create a graph first.")
@@ -439,7 +442,6 @@ class VisualisingPrims(GraphVisualiserGUI):
             self.status_label.configure(text="Graph export cancelled.")
     
    
-
     def screenshot_canvas(self):
         self.update_idletasks()  # Update the window layout
         self.update()  # Refresh the entire window to ensure it is drawn
@@ -701,6 +703,80 @@ class VisualisingPrims(GraphVisualiserGUI):
                     current_state_text = self.canvas.itemcget(edge.text_id, 'state')
                     reset_state_text = 'normal' if current_state_text == 'hidden' else 'normal'
                     self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
+    
+
+    def on_canvas_resize(self, event):
+        # Calculate the new dimensions
+        new_width = event.width
+        new_height = event.height
+
+        border_margin = 20
+
+        # Check each node and adjust if it's near  border
+        for node in self.nodes:
+            moved = False  # Flag to track if the node was moved
+            new_x, new_y = node.x, node.y
+
+            # Check right border
+            if node.x >= new_width - border_margin:
+                new_x = new_width - border_margin
+                moved = True
+
+            # Check left border
+            elif node.x <= border_margin:
+                new_x = border_margin
+                moved = True
+
+            # Check bottom border
+            if node.y >= new_height - border_margin:
+                new_y = new_height - border_margin
+                moved = True
+
+            # Check top border
+            elif node.y <= border_margin:
+                new_y = border_margin
+                moved = True
+
+            if moved:
+                # Move the node to the new position if it was adjusted
+                self.resize_move_node(node, new_x, new_y)
+    
+    def resize_move_node(self, node, new_x, new_y):
+        # Calculate deltas
+        dx = new_x - node.x
+        dy = new_y - node.y
+
+        # Update node position
+        node.x = new_x
+        node.y = new_y
+
+        # Move the node visually
+        self.canvas.move(node.id, dx, dy)
+        self.canvas.move(node.text_id, dx, dy)
+
+        # Update connected edges
+        for edge in self.edges:
+            if edge.start_node == node or edge.end_node == node:
+                # Update the edge line
+                self.canvas.coords(edge.line_id, 
+                                edge.start_node.x, edge.start_node.y, 
+                                edge.end_node.x, edge.end_node.y)
+
+                # Recalculate the midpoint for the edge
+                mid_x = (edge.start_node.x + edge.end_node.x) / 2
+                mid_y = (edge.start_node.y + edge.end_node.y) / 2
+
+                # Update the position of the midpoint oval
+                self.canvas.coords(edge.midpoint_id,
+                                mid_x - 8, mid_y - 8, 
+                                mid_x + 8, mid_y + 8)
+
+                # Move the weight label to the new midpoint position
+                self.canvas.coords(edge.text_id, mid_x, mid_y)
+
+                # Ensure the edge, midpoint, and label are raised above other canvas items
+                self.canvas.tag_raise(edge.midpoint_id)
+                self.canvas.tag_raise(edge.text_id)
 
 
     def return_to_main_menu(self):

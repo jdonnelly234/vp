@@ -9,6 +9,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import platform
 import itertools
 import numpy as np
+import graph_generator
+import psutil
+import os
 
 from node import Node
 from edge import Edge
@@ -24,6 +27,8 @@ class ComplexityAnalyser(ComplexityGUI):
         super().__init__()
 
         self.nodes = []  # List to store nodes
+        self.edges = []
+        self.E = {}
         self.node_counter = 0  # Counter to keep track of the number of nodes
         self.processor = platform.processor()
 
@@ -35,9 +40,13 @@ class ComplexityAnalyser(ComplexityGUI):
         self.clear_graph()
         self.clear_metrics()
 
-        nodes = list(range(2, max_nodes + 1, steps))  # Start from 2 to avoid graphs with less than 2 nodes
+        initial_range = list(range(2, max_nodes, steps))  # Start from 2 to avoid graphs with less than 2 nodes
 
-        nodes.append(max_nodes)
+        # Only append max_nodes if the difference is greater than the step interval.
+        if max_nodes - initial_range[-1] > steps:
+            initial_range.append(max_nodes)
+        
+        nodes = initial_range
         print(f"Steps: {steps}")
         print(f"Nodes: {nodes}")
         comparisons = []
@@ -54,7 +63,7 @@ class ComplexityAnalyser(ComplexityGUI):
         execution_time = end_time - start_time  # This would be more meaningful if averaged over runs
 
         # Display complexity metrics for the last measured node count, 
-        self.display_complexity_metrics(nodes[-1], int((nodes[-1] * (nodes[-1] - 1)) / 2) , _, execution_time, comparisons[-1], self.processor)
+        self.display_complexity_metrics(max_nodes, int((max_nodes * (max_nodes - 1)) / 2) , _, execution_time, comparisons[-1], self.processor)
 
         # You might need to adjust the visualization function if it needs to handle varying numbers of nodes
         self.visualize_complexity(nodes, comparisons)
@@ -63,26 +72,34 @@ class ComplexityAnalyser(ComplexityGUI):
     def analyse_execution_time(self):
         max_nodes = int(self.exec_slider.get())  
         steps = int(self.exec_steps_slider.get())
-        # Clear previous graph and metrics
         self.clear_graph()
         self.clear_metrics()
 
-        nodes = list(range(2, max_nodes + 1, steps))  # Start from 2 to avoid graphs with less than 2 nodes
-        nodes.append(max_nodes)
+        initial_range = list(range(2, max_nodes, steps))  # Generates nodes with the step interval.
+        
+        # Only append max_nodes if the difference is greater than the step interval.
+        if max_nodes - initial_range[-1] > steps / 2:
+            initial_range.append(max_nodes)
+
+        nodes = initial_range
         print(f"Steps: {steps}")
         print(f"Nodes: {nodes}")
         execution_times = []
         
         for n in nodes:
             graph = self.generate_complete_graph(n)
+
+            # Run Prim's algorithm
             start_time = time.perf_counter()
-            _, num_comparisons = prim_minimum_spanning_tree_with_priority_queue(graph)  # Ignore the result, just measure time
+            _, num_comparisons = prim_minimum_spanning_tree(graph)
             end_time = time.perf_counter()
+
             execution_times.append(end_time - start_time)
+
             print(f"Prim's execution time on graph with {n} nodes: {end_time - start_time} seconds")
         
         # Display complexity metrics
-        self.display_complexity_metrics(nodes[-1], int((nodes[-1] * (nodes[-1] - 1)) / 2), _, (execution_times[len(execution_times) - 1])/len(execution_times), num_comparisons, self.processor)
+        self.display_complexity_metrics(max_nodes, int((max_nodes * (max_nodes - 1)) / 2), _, (execution_times[len(execution_times) - 1])/len(execution_times), num_comparisons, self.processor)
 
         self.visualize_execution_time(nodes, execution_times)
         

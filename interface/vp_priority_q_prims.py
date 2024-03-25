@@ -4,8 +4,6 @@
 
 import heapq
 
-import heapq
-
 def prim_minimum_spanning_tree_with_priority_queue(graph):
     V, E, W = graph
     V = set(V)  # Set of vertices

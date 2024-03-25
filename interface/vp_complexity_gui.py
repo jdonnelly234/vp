@@ -45,7 +45,7 @@ class ComplexityGUI(ctk.CTk):
         self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="View complexity metrics", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.lower_left_frame_title.grid(row=6, column=0, pady=(15,10), padx=10, sticky='w')
 
-        self.lower_left_frame = ctk.CTkFrame(self.left_frame, width=360, height=300, fg_color=ANALYSER_FRAME_COLOR, corner_radius=10)
+        self.lower_left_frame = ctk.CTkFrame(self.left_frame, width=360, height=500, fg_color=ANALYSER_FRAME_COLOR, corner_radius=10)
         self.lower_left_frame.grid(row=7, column=0, pady=10, padx=10, sticky='ew')
 
         self.lower_left_frame_placeholder = ctk.CTkLabel(self.lower_left_frame, text="Your complexity metrics will be displayed here \n once the Analyse button is clicked...", font=COMPLEXITY_PLACEHOLDER_FONT, text_color=COMPLEXITY_PLACEHOLDER_COLOUR)
@@ -101,8 +101,8 @@ class ComplexityGUI(ctk.CTk):
         self.exec_tab_analyse_button.pack(padx=(30), pady = (30,10))
 
         # Button to return to the main menu
-        return_button = ctk.CTkButton(self.left_frame, text="Return to Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
-        return_button.grid(row = 8, pady = 40)
+        return_button = ctk.CTkButton(self.left_frame, text="Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color="orange", bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT, width=100)
+        return_button.grid(row = 8, pady=200, padx=10, sticky='w')
      
 
     def update_slider_label(self, label, value):

@@ -3,6 +3,7 @@ from vp_graph import VisualisingPrims
 from vp_complexity import ComplexityAnalyser
 from config import *
 from PIL import Image
+import sys
 
 
 class MainMenu(ctk.CTk):
@@ -204,6 +205,7 @@ class MainMenu(ctk.CTk):
 
     def launch_exit(self):
         self.destroy()
+        sys.exit()
 
 
         
