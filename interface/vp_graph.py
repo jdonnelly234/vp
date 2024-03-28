@@ -3,11 +3,11 @@ from tkinter import messagebox, simpledialog
 import random
 import time
 
-from node import Node
-from edge import Edge
-from vp_graph_gui import GraphVisualiserGUI
-from utils import *
-from config import *
+from .node import Node
+from .edge import Edge
+from .vp_graph_gui import GraphVisualiserGUI
+from .utils import *
+from .config import *
 from PIL import ImageGrab
 import sys
 
@@ -27,6 +27,9 @@ class VisualisingPrims(GraphVisualiserGUI):
         # Bind mouse events
         self.canvas.bind("<Button-1>", self.left_click_handler)
         self.canvas.bind("<B1-Motion>", self.drag_handler)
+
+        self.canvas_old_width = self.canvas.winfo_reqwidth()
+        self.canvas_old_height = self.canvas.winfo_reqheight()
 
 
     # For creating a new node
@@ -705,52 +708,35 @@ class VisualisingPrims(GraphVisualiserGUI):
                     self.canvas.itemconfigure(edge.text_id, state=reset_state_text)
     
 
+    # Below is for handling graph dimensions wnen canvas is shrunk
     def on_canvas_resize(self, event):
         # Calculate the new dimensions
         new_width = event.width
         new_height = event.height
+        
+        # Assuming self.canvas_old_width and self.canvas_old_height hold the old dimensions
+        # You need to initialize these somewhere in your code, probably in the __init__ method
+        scale_x = new_width / self.canvas_old_width if self.canvas_old_width else 1
+        scale_y = new_height / self.canvas_old_height if self.canvas_old_height else 1
 
-        border_margin = 20
+        # Update the old dimensions with the new dimensions
+        self.canvas_old_width = new_width
+        self.canvas_old_height = new_height
 
-        # Check each node and adjust if it's near  border
+        # Update the positions of all nodes based on the scale factors
         for node in self.nodes:
-            moved = False  # Flag to track if the node was moved
-            new_x, new_y = node.x, node.y
-
-            # Check right border
-            if node.x >= new_width - border_margin:
-                new_x = new_width - border_margin
-                moved = True
-
-            # Check left border
-            elif node.x <= border_margin:
-                new_x = border_margin
-                moved = True
-
-            # Check bottom border
-            if node.y >= new_height - border_margin:
-                new_y = new_height - border_margin
-                moved = True
-
-            # Check top border
-            elif node.y <= border_margin:
-                new_y = border_margin
-                moved = True
-
-            if moved:
-                # Move the node to the new position if it was adjusted
-                self.resize_move_node(node, new_x, new_y)
-    
+            self.resize_move_node(node, node.x * scale_x, node.y * scale_y)
+        
     def resize_move_node(self, node, new_x, new_y):
         # Calculate deltas
         dx = new_x - node.x
         dy = new_y - node.y
 
-        # Update node position
+        # Update the node's stored position
         node.x = new_x
         node.y = new_y
 
-        # Move the node visually
+        # Move the node and its text identifier
         self.canvas.move(node.id, dx, dy)
         self.canvas.move(node.text_id, dx, dy)
 
@@ -766,17 +752,16 @@ class VisualisingPrims(GraphVisualiserGUI):
                 mid_x = (edge.start_node.x + edge.end_node.x) / 2
                 mid_y = (edge.start_node.y + edge.end_node.y) / 2
 
-                # Update the position of the midpoint oval
+                # Update the position of the midpoint oval and the weight label
                 self.canvas.coords(edge.midpoint_id,
                                 mid_x - 8, mid_y - 8, 
                                 mid_x + 8, mid_y + 8)
-
-                # Move the weight label to the new midpoint position
                 self.canvas.coords(edge.text_id, mid_x, mid_y)
 
                 # Ensure the edge, midpoint, and label are raised above other canvas items
                 self.canvas.tag_raise(edge.midpoint_id)
                 self.canvas.tag_raise(edge.text_id)
+
 
 
     def return_to_main_menu(self):

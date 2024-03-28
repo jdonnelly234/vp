@@ -1,0 +1,1 @@
+{"nodes": [{"id": "A", "x": 100, "y": 100}, {"id": "B", "x": 200, "y": 200}, {"id": "C", "x": 300, "y": 300}], "edges": [{"start": "A", "end": "B", "weight": 5}, {"start": "B", "end": "C", "weight": 10}]}

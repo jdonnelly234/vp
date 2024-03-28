@@ -1,4 +1,4 @@
-from vp_main_gui import MainMenu
+from .vp_main_gui import MainMenu
 
 class MainApplication:
     def __init__(self):

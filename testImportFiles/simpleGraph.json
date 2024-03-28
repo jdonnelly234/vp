@@ -1,13 +1,13 @@
 {
     "nodes": [
-        {"id": "A", "x": 100, "y": 150},
+        {"id": "14", "x": 100, "y": 150},
         {"id": "B", "x": 200, "y": 200},
         {"id": "C", "x": 300, "y": 400}
     ],
     "edges": [
-        {"start": "A", "end": "B", "weight": 5},
+        {"start": "14", "end": "B", "weight": 5},
         {"start": "B", "end": "C", "weight": 3},
-        {"start": "C", "end": "A", "weight": 1}
+        {"start": "C", "end": "14", "weight": 1}
     ]
     
 }

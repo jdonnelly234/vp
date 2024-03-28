@@ -1,7 +1,7 @@
 import customtkinter as ctk
-from vp_graph import VisualisingPrims
-from vp_complexity import ComplexityAnalyser
-from config import *
+from .vp_graph import VisualisingPrims
+from .vp_complexity import ComplexityAnalyser
+from .config import *
 from PIL import Image
 import sys
 

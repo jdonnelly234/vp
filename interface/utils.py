@@ -1,6 +1,6 @@
 import json
 from tkinter import messagebox, filedialog
-from edge import Edge
+from .edge import Edge
 
 
 # Checks if the graph is connected using depth-first search

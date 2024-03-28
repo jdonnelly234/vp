@@ -9,18 +9,17 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import platform
 import itertools
 import numpy as np
-import graph_generator
 import psutil
 import os
 
-from node import Node
-from edge import Edge
-from vp_complexity_gui import ComplexityGUI
-from utils import *
-from config import *
+from .node import Node
+from .edge import Edge
+from .vp_complexity_gui import ComplexityGUI
+from .utils import *
+from .config import *
 
-from vp_prims_algorithm import prim_minimum_spanning_tree
-from vp_priority_q_prims import prim_minimum_spanning_tree_with_priority_queue
+from .vp_prims_algorithm import prim_minimum_spanning_tree
+from .vp_priority_q_prims import prim_minimum_spanning_tree_with_priority_queue
 
 class ComplexityAnalyser(ComplexityGUI):
     def __init__(self):
@@ -153,7 +152,7 @@ class ComplexityAnalyser(ComplexityGUI):
             ax.set_ylabel("Number of comparisons (million)")
         else:
             ax.set_ylabel("Number of comparisons")
-        ax.set_title(f"Time complexity of Prim's for a complete graph with {int(self.comp_slider.get())} nodes")
+        ax.set_title(f"Line chart showing the time complexity of Prim's for a series of complete graphs up to {int(self.comp_slider.get())} nodes.")
         ax.legend()
         ax.grid(True)
 
@@ -180,7 +179,7 @@ class ComplexityAnalyser(ComplexityGUI):
         # Labeling the plot
         ax.set_xlabel("Number of nodes")
         ax.set_ylabel("Execution time (s)")
-        ax.set_title(f"Execution time of Prim's for a complete graph with {int(self.exec_slider.get())} nodes")
+        ax.set_title(f"Line chart showing the execution time of Prim's algorithm on a series of complete graphs up to {int(self.exec_slider.get())} nodes.")
         ax.legend()
         ax.grid(True)
 
