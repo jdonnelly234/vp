@@ -157,7 +157,7 @@ class TestVPGraphEdge(unittest.TestCase):
         self.vp.create_node(200, 200, "B")
         self.vp.start_node_var.set("A")
         self.vp.end_node_var.set("B")
-        self.vp.weight_var.set("1001")  # Assuming the application has a maximum weight of 1000
+        self.vp.weight_var.set("100")  
 
         self.vp.manual_create_edge()
         

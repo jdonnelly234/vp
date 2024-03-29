@@ -3,11 +3,11 @@ from tkinter import messagebox, simpledialog
 import random
 import time
 
-from .node import Node
-from .edge import Edge
-from .vp_graph_gui import GraphVisualiserGUI
-from .utils import *
-from .config import *
+from node import Node
+from edge import Edge
+from vp_graph_gui import GraphVisualiserGUI
+from utils import *
+from config import *
 from PIL import ImageGrab
 import sys
 
@@ -235,7 +235,7 @@ class VisualisingPrims(GraphVisualiserGUI):
                     self.canvas.tag_raise(edge.text_id)
 
 
-    # Finds the node that was clicked on for drag_handler
+    # Finds the node that was clicked on for left_click_handler
     def find_node(self, x, y):
         for node in self.nodes:
             if (node.x - 10) <= x <= (node.x + 10) and (node.y - 10) <= y <= (node.y + 10):

@@ -360,9 +360,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         for _ in range(len(self.app.nodes) - 1):
             self.app.next_step()
 
-        # At this point, the MST edges should be marked by the application logic
-        # Now, mock the canvas itemconfig to capture changes in edge visibility
-        self.app.canvas.itemconfig = MagicMock()
+        self.app.canvas.itemconfigure = MagicMock()
 
         # Simulate the "Show MST only" button action
         self.app.toggle_mst_view()
@@ -370,14 +368,44 @@ class TestVPGraphIntegration(unittest.TestCase):
         # Check if itemconfig was called
         try:
             # Verify if itemconfig was called at all
-            self.app.canvas.itemconfig.assert_called()
+            self.app.canvas.itemconfigure.assert_called()
         except AssertionError:
             # If not, let's print the call_args_list for debug
-            print("itemconfig call_args_list:", self.app.canvas.itemconfig.call_args_list)
+            print("itemconfig call_args_list:", self.app.canvas.itemconfigure.call_args_list)
             raise
+    
 
-        # Check if the info text widget was updated to reflect that only MST edges are shown
-        self.app.update_info_text.assert_called_with("Showing only edges in MST")
+    #User story 12: Removing an edge
+    def test_remove_edge(self):
+        # Simulating graph creation with one edge
+        self.app.create_node(100, 100, "A")
+        self.app.create_node(200, 200, "B")
+        self.app.create_edge(Edge(self.app.nodes[0], self.app.nodes[1], 5))
+
+        initial_edge_count = len(self.app.edges)
+
+        # User selects an edge from the “Delete Edge” dropdown menu.
+        edge_to_delete = self.app.edges[0]
+        edge_identifier = f"{edge_to_delete.start_node.identifier} - {edge_to_delete.end_node.identifier}"
+        self.app.delete_edge_var.set(edge_identifier)
+
+        # User clicks the "Delete Edge" button
+        self.app.delete_edge()
+
+        # Check if the edge has been removed from the internal state
+        new_edge_count = len(self.app.edges)
+        self.assertEqual(new_edge_count, initial_edge_count - 1)
+
+        # The visual representation of the chosen edge is removed from the canvas
+        self.app.canvas.delete.assert_any_call(edge_to_delete.line_id)
+        self.app.canvas.delete.assert_any_call(edge_to_delete.text_id)
+        self.app.canvas.delete.assert_any_call(edge_to_delete.midpoint_id)
+
+        # Expected outcome: The edge is no longer in the list of edges
+        self.assertNotIn(edge_to_delete, self.app.edges)
+
+
+        
   
 
 

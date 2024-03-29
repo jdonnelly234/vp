@@ -12,14 +12,14 @@ import numpy as np
 import psutil
 import os
 
-from .node import Node
-from .edge import Edge
-from .vp_complexity_gui import ComplexityGUI
-from .utils import *
-from .config import *
+from node import Node
+from edge import Edge
+from vp_complexity_gui import ComplexityGUI
+from utils import *
+from config import *
 
-from .vp_prims_algorithm import prim_minimum_spanning_tree
-from .vp_priority_q_prims import prim_minimum_spanning_tree_with_priority_queue
+from vp_prims_algorithm import prim_minimum_spanning_tree
+from vp_priority_q_prims import prim_minimum_spanning_tree_with_priority_queue
 
 class ComplexityAnalyser(ComplexityGUI):
     def __init__(self):

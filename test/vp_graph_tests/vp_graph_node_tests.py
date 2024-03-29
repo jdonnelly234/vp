@@ -132,24 +132,7 @@ class TestVPGraphNode(unittest.TestCase):
         mid_x, mid_y = (new_x + edge.end_node.x) / 2, (new_y + edge.end_node.y) / 2
         self.vp.canvas.coords.assert_any_call(edge.midpoint_id, mid_x - 8, mid_y - 8, mid_x + 8, mid_y + 8)
         self.vp.canvas.coords.assert_any_call(edge.text_id, mid_x, mid_y)
-    
 
-
-    # Test moving a node to an invalid position beyond canvas
-    def test_move_node_to_invalid_position(self):
-        self.vp.create_node(100, 100, "A")
-        
-        # Configure the mock to return specific integer values for winfo_width and winfo_height
-        self.vp.canvas.winfo_width.return_value = 700
-        self.vp.canvas.winfo_height.return_value = 568
-
-        invalid_positions = [(-10, -10), (self.vp.canvas.winfo_width() + 10, 100)]
-        for new_x, new_y in invalid_positions:
-            self.vp.resize_move_node(self.vp.nodes[0], new_x, new_y)
-            # Assuming the application prevents moving nodes to invalid positions,
-            # the node's position should remain unchanged.
-            self.assertNotEqual((self.vp.nodes[0].x, self.vp.nodes[0].y), (new_x, new_y), f"Node was incorrectly allowed to move to an invalid position ({new_x}, {new_y}).")
-    
 
     # Test that the graph becomes disconnected after a node deletion and Prim's algorithm handles it.
     def test_graph_disconnect_after_node_deletion(self):

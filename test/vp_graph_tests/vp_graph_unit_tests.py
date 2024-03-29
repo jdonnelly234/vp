@@ -10,16 +10,26 @@ class TestVisualisingPrims(unittest.TestCase):
         self.vp.start_node_var = StringVar()
         self.vp.end_node_var = StringVar()
         self.vp.weight_var = StringVar()
-        self.vp.delete_node_var = MagicMock()
-        self.vp.delete_edge_var = MagicMock()
+        self.vp.delete_node_var = StringVar()
+        self.vp.delete_edge_var = StringVar()
 
         self.vp.canvas = MagicMock()
         self.vp.top_margin = 50  
 
-    #             #
-    # COMBO TESTS #
-    #             #
-        
+    
+    # Test initial state before graph creation is correct
+    def test_initial_state(self):
+        self.assertEqual(len(self.vp.nodes), 0)
+        self.assertEqual(len(self.vp.edges), 0)
+        self.assertIsNone(self.vp.selected_node)
+        self.assertIsNone(self.vp.drag_start_pos)
+        self.assertEqual(self.vp.start_vertex_var.get(), "Source")
+        self.assertEqual(self.vp.start_node_var.get(), "")
+        self.assertEqual(self.vp.end_node_var.get(), "")
+        self.assertEqual(self.vp.weight_var.get(), "")
+        self.assertEqual(self.vp.delete_node_var.get(), "")
+        self.assertEqual(self.vp.delete_edge_var.get(), "")
+
 
     # Test creating multiple nodes and edges
     def test_multiple_nodes_and_edges(self):
@@ -68,6 +78,7 @@ class TestVisualisingPrims(unittest.TestCase):
 
 
 
+    # Test generating a simple graph through the graph dialog
     @patch('interface.vp_graph.random.randint')
     def test_generate_simple_graph(self, mock_randint):
         # Mock randint to return controlled values for testing
@@ -89,8 +100,9 @@ class TestVisualisingPrims(unittest.TestCase):
         for edge in self.vp.edges:
             self.assertTrue(1 <= edge.weight <= 10)  # Edge weight within specified bounds
     
-    
 
+
+    # Test generating a complex graph through the graph dialog
     @patch('interface.vp_graph.random.randint')
     def test_generate_complex_graph(self, mock_randint):
         # Adjust side_effect as needed for more complex graph testing
@@ -187,18 +199,47 @@ class TestVisualisingPrims(unittest.TestCase):
         # Mock the status_label to capture text changes
         self.vp.status_label = MagicMock()
         
-        # Attempt to generate MST
+        # Attempt to generate MST which should use is_graph_connected() to detect the disconnected graph
         self.vp.generate_mst()
-        
-        # Since generate_mst() handles exceptions and updates the status_label text,
-        # we check if the appropriate error message is displayed.
+       
         expected_error_message = "Graph is disconnected. Prim's algorithm requires a connected graph."
         
         # Verify the status_label's text was updated with the expected error message
         actual_status_text = self.vp.status_label.configure.call_args[1]['text']
         self.assertIn(expected_error_message.lower(), actual_status_text.lower(),
                     "Expected error message about disconnected graph not found in status label.")
+    
 
+    # Test Prim's with no graph on canvas
+    def test_prims_with_no_graph(self):
+        self.vp.status_label = MagicMock()
+        
+        # Attempt to generate MST
+        self.vp.generate_mst()
+        
+        expected_error_message = "Please add nodes and edges to the canvas."
+        
+        # Verify the status_label's text was updated with the expected error message
+        actual_status_text = self.vp.status_label.configure.call_args[1]['text']
+        self.assertIn(expected_error_message.lower(), actual_status_text.lower(),
+                    "Expected error message about missing graph not found in status label.")
+    
+
+    # Test Prim's with one node and no edges
+    def test_prims_with_one_node(self):
+        self.vp.create_node(100, 100, "A")
+        # Mock the status_label to capture text changes
+        self.vp.status_label = MagicMock()
+        
+        # Attempt to generate MST
+        self.vp.generate_mst()
+        
+        expected_error_message = "Please add more than one node to the canvas."
+        
+        # Verify the status_label's text was updated with the expected error message
+        actual_status_text = self.vp.status_label.configure.call_args[1]['text']
+        self.assertIn(expected_error_message.lower(), actual_status_text.lower(),
+                    "Expected error message about missing graph not found in status label.")
 
 
     #                     #
@@ -234,29 +275,6 @@ class TestVisualisingPrims(unittest.TestCase):
         self.vp.drag_handler(event)
         self.assertEqual(self.vp.nodes[0].x, 150)
         self.assertEqual(self.vp.nodes[0].y, 150)
-    
-
-    
-
-
-    # Test importing and exporting graph data
-    #def test_import_export_graph(self):
-        #mock_graph_data = {
-        #    "nodes": [{"id": "A", "x": 100, "y": 100}, {"id": "B", "x": 200, "y": 200}],
-        #    "edges": [{"start": "A", "end": "B", "weight": 10}]
-        #}
-        #with patch('builtins.open', mock_open(read_data=mock_json)):
-        #    self.vp.import_graph()  
-        #    self.assertEqual(len(self.vp.nodes), 2)
-        #    self.assertEqual(len(self.vp.edges), 1)
-
-        #with patch('builtins.open', mock_open()) as mocked_file:
-        #    self.vp.export_graph_to_json()
-        #    mocked_file().write.assert_called_once_with(mock_json)
-    
-
-    
-
     
     
 if __name__ == '__main__':
