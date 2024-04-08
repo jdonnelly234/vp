@@ -5,6 +5,8 @@ from interface.vp_graph import VisualisingPrims, Node, Edge
 from interface.utils import *
 
 class TestVPGraphNode(unittest.TestCase):
+    print("###########GRAPH VISUALISER NODE TESTS###########\n") 
+
     def setUp(self):
         self.vp = VisualisingPrims()
         self.vp.start_node_var = StringVar()
@@ -57,7 +59,7 @@ class TestVPGraphNode(unittest.TestCase):
 
 
 
-
+    # Test deleting a node with empty delete node field
     def test_delete_node_empty_input(self):
         self.vp.create_node(100, 100, "A")
         self.vp.delete_node_var = MagicMock()

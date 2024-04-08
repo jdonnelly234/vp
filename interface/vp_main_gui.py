@@ -52,7 +52,7 @@ class MainMenu(ctk.CTk):
         self.right_frame.grid_columnconfigure(2, weight=1)
 
         # Create and place buttons in the right frame
-        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Prim's Visualiser", command=self.launch_graph_visualiser, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.graph_visualiser_button = ctk.CTkButton(self.right_frame, text="Graph Visualiser", command=self.launch_graph_visualiser, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.graph_visualiser_button.grid(row=8, column=1, sticky='ew')
 
         self.complexity_analyser_button = ctk.CTkButton(self.right_frame, text="Complexity Analyser", command=self.launch_complexity_analyser, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
@@ -85,6 +85,8 @@ class MainMenu(ctk.CTk):
 
 
     def launch_help(self):
+        self.help_launched = True  # Added flag for testing purposes
+
         # Create a Toplevel window for the help content
         help_window = ctk.CTkToplevel(self)
         help_window.title("Help")
@@ -147,6 +149,8 @@ class MainMenu(ctk.CTk):
 
     
     def launch_what_is_prims(self):
+        self.what_is_prims_launched = True  # Added flag for testing purposes
+
         info_window = ctk.CTkToplevel(self)
         info_window.title("What is Prim's Algorithm?")
         info_window.geometry("500x400")  

@@ -9,6 +9,7 @@ import os
 from PIL import Image
 
 class TestVPGraphIntegration(unittest.TestCase):
+    print("###########GRAPH VISUALISER INTEGRATION TESTS###########\n") 
     def setUp(self):
         self.app = VisualisingPrims()
 
@@ -23,13 +24,15 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.app.canvas = MagicMock()
         
         self.app.top_margin = 50
+               
+
 
         
 
     # INTEGRATION TESTS BASED ON USER STORIES IN DISSERTATION TESTING CHAPTER 5.2 AND APPENDICES #  
 
 
-    # User Story 1: Create a node
+    # GV User Story 1: Create a node
     def test_creating_node(self):
         initial_node_count = len(self.app.nodes)
         
@@ -50,7 +53,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(new_node.identifier, "A")
 
     
-    # User Story 2: Connecting Nodes with an Edge
+    # GV User Story 2: Connecting Nodes with an Edge
     def test_connecting_nodes_with_edge(self):
         # Create two nodes
         self.app.create_node(100, 100, "A")
@@ -91,7 +94,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(created_edge.weight, weight)
     
 
-    # User Story 3: Deleting a Node
+    # GV User Story 3: Deleting a Node
     def test_deleting_node(self):
         # Simulating graph creation
         self.app.create_node(100, 100, "A")
@@ -122,7 +125,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(self.app.canvas.delete.call_count, expected_delete_calls)
     
 
-    #User story 4: Running Prim's Algorithm
+    # GV User story 4: Running Prim's Algorithm
     def test_running_prims_algorithm(self):
         # Create a connected graph
         self.app.create_node(100, 100, "A")
@@ -154,7 +157,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.app.update_info_text.assert_called()
     
 
-    # User story 5: Importing a graph
+    # GV User story 5: Importing a graph
     def test_importing_graph(self):
         
         # Prepare a sample graph JSON structure
@@ -184,7 +187,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(self.app.canvas.create_line.call_count, len(self.sample_graph['edges']))
 
 
-    # User story 6: Exporting a graph
+    # GV User story 6: Exporting a graph
     def test_exporting_graph(self):
         # Create a graph with 2 nodes and an edge
         self.app.create_node(100, 100, "A")
@@ -218,7 +221,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(exported_graph, expected_graph)
     
 
-    # User story 7: Taking a screenshot
+    # GV User story 7: Taking a screenshot
     def test_taking_screenshot(self):
         # Mock the filedialog.asksaveasfilename to simulate file save dialog
         with patch('tkinter.filedialog.asksaveasfilename', return_value='/Users/jamesdonnelly/Third_Year/CSC3002_Computer_Science_Project/code/prims_implementation/testImportFiles/screenshot.png'):
@@ -245,7 +248,7 @@ class TestVPGraphIntegration(unittest.TestCase):
                 )
     
 
-    # User story 8: Resetting the canvas
+    # GV User story 8: Resetting the canvas
     def test_resetting_graph(self):
         # Simulating graph creation
         self.app.create_node(100, 100, "A")
@@ -270,7 +273,7 @@ class TestVPGraphIntegration(unittest.TestCase):
             self.assertEqual(self.app.status_label.cget("text"), "Graph has been reset")
 
 
-    # User story 9: Resizing the canvas
+    # GV User story 9: Resizing the canvas
     def test_resizing_canvas(self):
         # Create some nodes and edges for the graph
         self.app.create_node(100, 100, "A")  # Node A at 100x100
@@ -300,7 +303,7 @@ class TestVPGraphIntegration(unittest.TestCase):
             self.app.resize_move_node.assert_any_call(node, expected_x, expected_y)
     
 
-    # User story 10: Moving a node
+    # GV User story 10: Moving a node
     def test_moving_node_and_connected_edges(self):
         self.app.canvas.winfo_width.return_value = 300
         self.app.canvas.winfo_height.return_value = 300
@@ -339,7 +342,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.assertEqual(new_edge_coords, expected_new_edge_coords, "Edge position not updated correctly.")
     
 
-    # User story 11: Showing only MST edges on canvas
+    # GV User story 11: Showing only MST edges on canvas
     def test_showing_only_mst_edges(self):
         self.app.canvas = MagicMock()
         # Simulating graph creation
@@ -355,7 +358,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.app.start_vertex_var.set(start_node_identifier)
 
         # Run Prim's algorithm to completion to identify the MST edges
-        self.app.start_vertex_var.set("A")  # Assuming "A" is the identifier for the start node
+        self.app.start_vertex_var.set("A")  
         self.app.generate_mst()
         for _ in range(len(self.app.nodes) - 1):
             self.app.next_step()
@@ -370,12 +373,12 @@ class TestVPGraphIntegration(unittest.TestCase):
             # Verify if itemconfig was called at all
             self.app.canvas.itemconfigure.assert_called()
         except AssertionError:
-            # If not, let's print the call_args_list for debug
+            # If not, print the call_args_list for debug
             print("itemconfig call_args_list:", self.app.canvas.itemconfigure.call_args_list)
             raise
     
 
-    #User story 12: Removing an edge
+    # GV User story 12: Removing an edge
     def test_remove_edge(self):
         # Simulating graph creation with one edge
         self.app.create_node(100, 100, "A")
@@ -401,7 +404,7 @@ class TestVPGraphIntegration(unittest.TestCase):
         self.app.canvas.delete.assert_any_call(edge_to_delete.text_id)
         self.app.canvas.delete.assert_any_call(edge_to_delete.midpoint_id)
 
-        # Expected outcome: The edge is no longer in the list of edges
+        # Assert the edge is no longer in the list of edges
         self.assertNotIn(edge_to_delete, self.app.edges)
 
 

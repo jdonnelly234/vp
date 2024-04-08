@@ -28,6 +28,8 @@ class ComplexityGUI(ctk.CTk):
          # Create left and right frames for metrics and graph
         self.left_frame = ctk.CTkFrame(self, width=WINDOW_WIDTH * 0.25, fg_color=FRAME_FG_COLOR, bg_color=FRAME_BG_COLOR)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
+        self.left_frame.grid_rowconfigure(6, weight=1)  # Assuming rows 0-4 are already in use, adjust if necessary
+
 
         self.right_frame = ctk.CTkFrame(self, width=WINDOW_WIDTH * 0.75, fg_color=FRAME_BG_COLOR)
         self.right_frame.pack(padx=20, pady=20)
@@ -39,14 +41,14 @@ class ComplexityGUI(ctk.CTk):
         self.upper_left_frame_title = ctk.CTkLabel(self.left_frame, text="Specify parameters", font=TITLE_FONT, text_color=TITLE_COLOUR)
         self.upper_left_frame_title.grid(row=0, column=0, pady=(15,10), padx=10, sticky='w')
 
-        self.upper_left_frame = ctk.CTkFrame(self.left_frame, width=300, height=100)
+        self.upper_left_frame = ctk.CTkFrame(self.left_frame, width=300, height=100, corner_radius=10)
         self.upper_left_frame.grid(row=1, column=0, pady=10, padx=10, sticky='w')
 
         self.lower_left_frame_title = ctk.CTkLabel(self.left_frame, text="View complexity metrics", font=TITLE_FONT, text_color=TITLE_COLOUR)
-        self.lower_left_frame_title.grid(row=6, column=0, pady=(15,10), padx=10, sticky='w')
+        self.lower_left_frame_title.grid(row=4, column=0, pady=(15, 5), padx=10, sticky='w')
 
         self.lower_left_frame = ctk.CTkFrame(self.left_frame, width=360, height=500, fg_color=ANALYSER_FRAME_COLOR, corner_radius=10)
-        self.lower_left_frame.grid(row=7, column=0, pady=10, padx=10, sticky='ew')
+        self.lower_left_frame.grid(row=5, column=0, pady=10, padx=10, sticky='ew')
 
         self.lower_left_frame_placeholder = ctk.CTkLabel(self.lower_left_frame, text="Your complexity metrics will be displayed here \n once the Analyse button is clicked...", font=COMPLEXITY_PLACEHOLDER_FONT, text_color=COMPLEXITY_PLACEHOLDER_COLOUR)
         self.lower_left_frame_placeholder.pack(pady=100)
@@ -78,15 +80,15 @@ class ComplexityGUI(ctk.CTk):
         self.comp_steps_slider_label.pack(padx=(10))
 
         # Button to start the analysis in comparisons tab
-        self.comp_tab_analyse_button = ctk.CTkButton(self.comp_tab, text="Analyse", command=self.analyse_comparisons, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=ANALYSER_FRAME_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.comp_tab_analyse_button = ctk.CTkButton(self.comp_tab, text="Analyse", command=lambda: self.analyse("comparisons"), text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=ANALYSER_FRAME_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.comp_tab_analyse_button.pack(padx=(30), pady = (30,10))
 
 
         self.exec_tab_node_title = ctk.CTkLabel(self.exec_tab, text="Use the slider to specify max nodes:", font=COMPLEXITY_SUBTITLE_FONT, text_color=TITLE_COLOUR)
         self.exec_tab_node_title.pack(padx=(20))
-        self.exec_slider = ctk.CTkSlider(self.exec_tab, from_=100, to=10000, number_of_steps=49, command=lambda value: self.update_slider_label(self.exec_slider_label, value), button_color=BUTTON_FG_COLOR)
+        self.exec_slider = ctk.CTkSlider(self.exec_tab, from_=100, to=4000, number_of_steps=39, command=lambda value: self.update_slider_label(self.exec_slider_label, value), button_color=BUTTON_FG_COLOR)
         self.exec_slider.pack(padx=(10))
-        self.exec_slider_label = ctk.CTkLabel(self.exec_tab, text="4950", font=COMPLEXITY_SUBTITLE_FONT, text_color=TITLE_COLOUR)
+        self.exec_slider_label = ctk.CTkLabel(self.exec_tab, text="2000", font=COMPLEXITY_SUBTITLE_FONT, text_color=TITLE_COLOUR)
         self.exec_slider_label.pack(padx=(10))
         self.exec_slider.bind("<ButtonRelease-1>", lambda event, arg="exec": self.on_node_slider_change(arg, event))
 
@@ -97,12 +99,12 @@ class ComplexityGUI(ctk.CTk):
         self.exec_steps_slider_label = ctk.CTkLabel(self.exec_tab, text="50", font=COMPLEXITY_SUBTITLE_FONT, text_color=TITLE_COLOUR)
         self.exec_steps_slider_label.pack(padx=(10))
 
-        self.exec_tab_analyse_button = ctk.CTkButton(self.exec_tab, text="Analyse", command=self.analyse_execution_time, text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=ANALYSER_FRAME_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
+        self.exec_tab_analyse_button = ctk.CTkButton(self.exec_tab, text="Analyse", command=lambda: self.analyse("execution_time"), text_color=TITLE_COLOUR, fg_color=BUTTON_FG_COLOR, bg_color=ANALYSER_FRAME_COLOR, font=COMPLEXITY_SUBTITLE_FONT)
         self.exec_tab_analyse_button.pack(padx=(30), pady = (30,10))
 
         # Button to return to the main menu
         return_button = ctk.CTkButton(self.left_frame, text="Main Menu", command=self.return_to_main_menu, text_color=TITLE_COLOUR, fg_color="orange", bg_color=FRAME_FG_COLOR, font=COMPLEXITY_SUBTITLE_FONT, width=100)
-        return_button.grid(row = 8, pady=200, padx=10, sticky='w')
+        return_button.grid(row = 8, pady=20, padx=10, sticky='sw')
      
 
     def update_slider_label(self, label, value):

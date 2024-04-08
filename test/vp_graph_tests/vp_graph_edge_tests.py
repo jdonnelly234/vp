@@ -5,6 +5,8 @@ from interface.vp_graph import VisualisingPrims, Node, Edge
 from interface.utils import *
 
 class TestVPGraphEdge(unittest.TestCase):
+    print("###########GRAPH VISUALISER EDGE TESTS###########\n") 
+
     def setUp(self):
         self.vp = VisualisingPrims()
         self.vp.start_node_var = StringVar()
