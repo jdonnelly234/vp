@@ -8,6 +8,7 @@ VP also includes a complexity analyser, which generates large complete graphs (u
 
 
 ## Visuals
+### VP's Graph Visualiser
 ![VP's Graph Visualiser](interface/images/VP%20graph%20visualiser.png)
 
 
