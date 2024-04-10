@@ -8,7 +8,7 @@ VP also includes a complexity analyser, which generates large complete graphs (u
 
 
 ## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+![VP's Graph Visualiser](interface/images/VP%20graph%20visualiser.png)
 
 
 ## Installation
