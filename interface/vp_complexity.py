@@ -93,7 +93,7 @@ class ComplexityAnalyser(ComplexityGUI):
 
         nodes = [generate_node_identifier(i) for i in range(num_nodes)]
         edges = list(itertools.combinations(nodes, 2))
-        weights = np.random.randint(1, 11, size=len(edges))
+        weights = [1] * len(edges)  # This creates a list with a "1" for each edge
 
         # Combine nodes and weights
         E = {(start, end): weight for (start, end), weight in zip(edges, weights)}        
