@@ -1,0 +1,56 @@
+{
+    "nodes": [
+        {
+            "id": "A",
+            "x": 385,
+            "y": 310
+        },
+        {
+            "id": "B",
+            "x": 145,
+            "y": 600
+        },
+        {
+            "id": "C",
+            "x": 163,
+            "y": 232
+        },
+        {
+            "id": "D",
+            "x": 387,
+            "y": 542
+        }
+    ],
+    "edges": [
+        {
+            "start": "A",
+            "end": "B",
+            "weight": 4
+        },
+        {
+            "start": "B",
+            "end": "C",
+            "weight": 10
+        },
+        {
+            "start": "C",
+            "end": "D",
+            "weight": 3
+        },
+        {
+            "start": "D",
+            "end": "B",
+            "weight": 3
+        },
+        {
+            "start": "A",
+            "end": "D",
+            "weight": 4
+        },
+        {
+            "start": "C",
+            "end": "A",
+            "weight": 1
+        }
+    ]
+}

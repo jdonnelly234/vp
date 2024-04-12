@@ -178,7 +178,7 @@ class ComplexityAnalyser(ComplexityGUI):
     
     def return_to_main_menu(self):
         self.destroy()
-        from interface.vp_main_gui import MainMenu    #Importing here to avoid circular import
+        from vp_main_gui import MainMenu    #Importing here to avoid circular import
         main_menu = MainMenu()  
         main_menu.mainloop() 
 

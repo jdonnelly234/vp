@@ -251,7 +251,7 @@ class VisualisingPrims(GraphVisualiserGUI):
         self.reset_button.configure(state='normal') # Enable "Reset Graph" button when canvas is clicked and node is added
         self.canvas_screenshot_button.configure(state='normal')  
 
-        self.status_label.configure(text="Graph Drawing Mode")
+        self.status_label.configure(text="Editing graph...")
 
         if clicked_node:
             # If a node is clicked, initiate the drag process
@@ -382,7 +382,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             # Perform all validation before modifying the graph
             for node_data in data["nodes"]:
                 if node_data["x"] > 624 or node_data["y"] > 768:
-                    raise ValueError(f"Node {node_data['id']} has invalid coordinates in the JSON file.")
+                    raise ValueError(f"Node {node_data['id']} has invalid coordinates in the JSON file. Ensure x < 624 and y < 768.")
                 if not node_data["id"].isalpha() or len(node_data["id"]) > 1:
                     raise ValueError(f"Node identifier {node_data["id"]} must be a single letter.")
 
@@ -440,7 +440,7 @@ class VisualisingPrims(GraphVisualiserGUI):
             # Write the JSON data to the selected file
             with open(file_path, 'w') as file:
                 file.write(graph_json)
-            self.status_label.configure(text=f"Graph saved as {file_path}")
+            self.status_label.configure(text=f"Graph has been successfully exported to your chosen location.")
         else:
             self.status_label.configure(text="Graph export cancelled.")
     

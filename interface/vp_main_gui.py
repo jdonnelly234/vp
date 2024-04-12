@@ -111,7 +111,7 @@ class MainMenu(ctk.CTk):
         accessibility_tab = helpTab.add("Accessibility")
 
         # Guide tab
-        which_guide_text = ctk.CTkLabel(guide_tab, text="Select a guide:", font=COMPLEXITY_SUBTITLE_FONT)
+        which_guide_text = ctk.CTkLabel(guide_tab, text="Select a guide:", font=("Helvetica", 14, "bold"))
         which_guide_text.grid(row=0, column=0, padx=50, pady=20)
         
         guide_text = ctk.CTkLabel(guide_tab, text=VISUALISER_GUIDE_TEXT, wraplength=380, justify="left")
@@ -127,7 +127,10 @@ class MainMenu(ctk.CTk):
         guide_selector = ctk.CTkComboBox(guide_tab, values=["Graph Visualiser", "Complexity Analyser"], width= 170, command = guide_text_decider, state="readonly")
         guide_selector.grid(row=0, column=1, padx=50, pady=20)
         guide_selector.set("Graph Visualiser")
+
         # FAQ tab
+        faq_text = ctk.CTkLabel(faq_tab, text=FAQ_TEXT, wraplength=380, justify="left")
+        faq_text.grid(row=0, column=0, padx=50, pady=20)
 
         # Accessibility tab
         colour_scheme_label = ctk.CTkLabel(accessibility_tab, text="Colour Scheme", font=COMPLEXITY_SUBTITLE_FONT)
@@ -155,8 +158,8 @@ class MainMenu(ctk.CTk):
         info_window.title("What is Prim's Algorithm?")
         info_window.geometry("500x400")  
 
-        what_is_prims_width = 500
-        what_is_prims_height = 400
+        what_is_prims_width = 450
+        what_is_prims_height = 300
 
         # Get the screen dimension
         screen_width = self.winfo_screenwidth()
@@ -170,9 +173,9 @@ class MainMenu(ctk.CTk):
         info_window.geometry(f'{what_is_prims_width}x{what_is_prims_height}+{center_x}+{center_y}')
 
         self.texts = [
-            "Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.",
-            "The algorithm operates by building this tree one node at a time, at each step adding the cheapest possible connection from the tree to another node.",
-            "It is used in network designing, where the goal is to connect all points with the minimum total weighting for the connections."
+            "Prim's algorithm is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph. The algorithm was developed in 1930 by Czech mathematician Vojtěch Jarník and later rediscovered and republished by computer scientists Robert C. Prim in 1957 and Edsger W. Dijkstra in 1959.",
+            "The algorithm operates by finding a subset of the edges that forms a tree that includes every node, where the total weight of all the edges in the tree is minimized. The algorithm operates by building this tree one node at a time, from an arbitrary starting node, at each step adding the cheapest possible connection from the tree to another node",
+            "Prim's algorithm is used in network designing, where the goal is to connect all points with the minimum total weighting for the connections. It is also used for planning road and railway networks that connect cities or towns, ensuring all locations are connected with the shortest total distance"
         ]
 
         self.current_text_index = 0

@@ -1,0 +1,146 @@
+{
+    "nodes": [
+        {
+            "id": "A",
+            "x": 588,
+            "y": 676
+        },
+        {
+            "id": "B",
+            "x": 94,
+            "y": 322
+        },
+        {
+            "id": "C",
+            "x": 409,
+            "y": 188
+        },
+        {
+            "id": "D",
+            "x": 515,
+            "y": 727
+        },
+        {
+            "id": "E",
+            "x": 62,
+            "y": 672
+        },
+        {
+            "id": "F",
+            "x": 584,
+            "y": 218
+        },
+        {
+            "id": "G",
+            "x": 263,
+            "y": 80
+        },
+        {
+            "id": "H",
+            "x": 42,
+            "y": 568
+        }
+    ],
+    "edges": [
+        {
+            "start": "A",
+            "end": "B",
+            "weight": 6
+        },
+        {
+            "start": "B",
+            "end": "C",
+            "weight": 10
+        },
+        {
+            "start": "C",
+            "end": "D",
+            "weight": 1
+        },
+        {
+            "start": "D",
+            "end": "E",
+            "weight": 6
+        },
+        {
+            "start": "E",
+            "end": "F",
+            "weight": 4
+        },
+        {
+            "start": "F",
+            "end": "G",
+            "weight": 10
+        },
+        {
+            "start": "G",
+            "end": "H",
+            "weight": 5
+        },
+        {
+            "start": "A",
+            "end": "G",
+            "weight": 2
+        },
+        {
+            "start": "B",
+            "end": "D",
+            "weight": 2
+        },
+        {
+            "start": "E",
+            "end": "H",
+            "weight": 10
+        },
+        {
+            "start": "D",
+            "end": "F",
+            "weight": 10
+        },
+        {
+            "start": "G",
+            "end": "E",
+            "weight": 3
+        },
+        {
+            "start": "G",
+            "end": "D",
+            "weight": 5
+        },
+        {
+            "start": "A",
+            "end": "C",
+            "weight": 3
+        },
+        {
+            "start": "E",
+            "end": "C",
+            "weight": 10
+        },
+        {
+            "start": "H",
+            "end": "B",
+            "weight": 5
+        },
+        {
+            "start": "B",
+            "end": "F",
+            "weight": 10
+        },
+        {
+            "start": "B",
+            "end": "G",
+            "weight": 4
+        },
+        {
+            "start": "A",
+            "end": "H",
+            "weight": 7
+        },
+        {
+            "start": "A",
+            "end": "D",
+            "weight": 5
+        }
+    ]
+}
