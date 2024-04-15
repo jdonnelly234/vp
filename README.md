@@ -13,7 +13,7 @@ VP also includes a complexity analyser, which generates large complete graphs (u
 
 
 ## Installation
-The 'src' directory contains executable versions of VP for Windows and Mac, created using pyinstaller, which can be ran on your machine to directly access the application. 
+The 'src' directory contains executable versions of VP for Windows and Mac, created using pyinstaller, which can be ran on your machine to directly access the application. Simply pull this repository and navigate to the 'src' directory on your local machine to find the VP executable files for your OS.
 
 
 ## Structure
