@@ -1,14 +1,14 @@
 import unittest
 from tkinter import StringVar
 from unittest.mock import MagicMock, mock_open, patch
-from interface.vp_graph import VisualisingPrims, Node, Edge
+from interface.vp_graph import GraphVisualiser, Node, Edge
 from interface.utils import *
 
 class TestVisualisingPrims(unittest.TestCase):
     print("###########GRAPH VISUALISER UNIT TESTS###########\n") 
 
     def setUp(self):
-        self.vp = VisualisingPrims()
+        self.vp = GraphVisualiser()
         self.vp.start_node_var = StringVar()
         self.vp.end_node_var = StringVar()
         self.vp.weight_var = StringVar()

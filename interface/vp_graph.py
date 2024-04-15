@@ -12,7 +12,7 @@ from PIL import ImageGrab
 import sys
 
 # Visualising Prim's main graph application class
-class VisualisingPrims(GraphVisualiserGUI):
+class GraphVisualiser(GraphVisualiserGUI):
     def __init__(self):
         super().__init__()
         self.nodes = []  # List to store nodes

@@ -1,3 +1,5 @@
+## Initial code for the graph visualiser, unused in final implementation ##
+
 import tkinter as tk
 from tkinter import Canvas, Label, Button, OptionMenu, StringVar, Entry
 import random

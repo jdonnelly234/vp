@@ -2,7 +2,7 @@ import unittest
 from tkinter import StringVar, filedialog
 from customtkinter import CTk
 from unittest.mock import MagicMock, mock_open, patch
-from interface.vp_graph import VisualisingPrims, Node, Edge
+from interface.vp_graph import GraphVisualiser, Node, Edge
 from interface.utils import *
 import json
 import os
@@ -11,7 +11,7 @@ from PIL import Image
 class TestVPGraphIntegration(unittest.TestCase):
     print("###########GRAPH VISUALISER INTEGRATION TESTS###########\n") 
     def setUp(self):
-        self.app = VisualisingPrims()
+        self.app = GraphVisualiser()
 
         self.app.start_node_var = StringVar()
         self.app.end_node_var = StringVar()

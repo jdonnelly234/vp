@@ -1,9 +1,10 @@
 import customtkinter as ctk
-from vp_graph import VisualisingPrims
+from vp_graph import GraphVisualiser
 from vp_complexity import ComplexityAnalyser
 from config import *
 from PIL import Image
 import sys
+
 
 
 class MainMenu(ctk.CTk):
@@ -73,7 +74,7 @@ class MainMenu(ctk.CTk):
 
     def launch_graph_visualiser(self):
         self.withdraw()
-        visualiser = VisualisingPrims()
+        visualiser = GraphVisualiser()
         visualiser.mainloop()
         self.deiconify()  # Show the main menu again after the visualiser is closed, this fixes segmentation fault
 

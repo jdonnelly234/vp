@@ -1,5 +1,5 @@
 from interface.vp_main_gui import MainMenu
-from interface.vp_graph import VisualisingPrims
+from interface.vp_graph import GraphVisualiser
 from interface.vp_complexity import ComplexityAnalyser
 import unittest
 from unittest.mock import MagicMock, patch
@@ -14,7 +14,7 @@ class TestVPMainIntegration(unittest.TestCase):
     
     # MM User Story 1: Launching the graph visualiser
     # Test launch of graph visualiser instance from main menu using mock
-    @patch('interface.vp_main_gui.VisualisingPrims')
+    @patch('interface.vp_main_gui.GraphVisualiser')
     def test_launch_graph_visualiser(self, mock_visualiser):
         # Call the method that should open the graph visualiser
         self.app.launch_graph_visualiser()
