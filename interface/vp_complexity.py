@@ -13,13 +13,13 @@ import numpy as np
 import psutil
 import os
 
-from node import Node
-from edge import Edge
-from vp_complexity_gui import ComplexityGUI
-from utils import *
-from config import *
+from interface.node import Node
+from interface.edge import Edge
+from interface.vp_complexity_gui import ComplexityGUI
+from interface.utils import *
+from interface.config import *
 
-from vp_prims_algorithm import prim_minimum_spanning_tree
+from interface.vp_prims_algorithm import prim_minimum_spanning_tree
 
 class ComplexityAnalyser(ComplexityGUI):
     def __init__(self):
@@ -178,7 +178,7 @@ class ComplexityAnalyser(ComplexityGUI):
     
     def return_to_main_menu(self):
         self.destroy()
-        from vp_main_gui import MainMenu    #Importing here to avoid circular import
+        from interface.vp_main_gui import MainMenu    #Importing here to avoid circular import
         main_menu = MainMenu()  
         main_menu.mainloop() 
 

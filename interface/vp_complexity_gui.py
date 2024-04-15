@@ -1,8 +1,8 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import OptionMenu, StringVar
-from config import *
-from utils import *
+from interface.config import *
+from interface.utils import *
 
 # GUI class that inherits from the custom tkinter class, handles all GUI related changes except canvas changes related to Prim's
 class ComplexityGUI(ctk.CTk):

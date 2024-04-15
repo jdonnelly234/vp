@@ -3,11 +3,11 @@ from tkinter import messagebox, simpledialog
 import random
 import time
 
-from node import Node
-from edge import Edge
-from vp_graph_gui import GraphVisualiserGUI
-from utils import *
-from config import *
+from interface.node import Node
+from interface.edge import Edge
+from interface.vp_graph_gui import GraphVisualiserGUI
+from interface.utils import *
+from interface.config import *
 from PIL import ImageGrab
 import sys
 
@@ -766,7 +766,7 @@ class GraphVisualiser(GraphVisualiserGUI):
 
     def return_to_main_menu(self):
         self.destroy()
-        from vp_main_gui import MainMenu    #Importing here to avoid circular import
+        from interface.vp_main_gui import MainMenu    #Importing here to avoid circular import
         main_menu = MainMenu()  
         main_menu.mainloop() 
 

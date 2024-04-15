@@ -1,7 +1,7 @@
 import customtkinter as ctk
-from vp_graph import GraphVisualiser
-from vp_complexity import ComplexityAnalyser
-from config import *
+from interface.vp_graph import GraphVisualiser
+from interface.vp_complexity import ComplexityAnalyser
+from interface.config import *
 from PIL import Image
 import sys
 
